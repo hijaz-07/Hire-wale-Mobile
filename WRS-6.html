@@ -190,6 +190,7 @@
       color: var(--ink);
       font-size: 16px;
       min-width: 0;
+      width: 100%; /* Added for better mobile experience */
     }
 
     .field input::placeholder {
@@ -327,6 +328,7 @@
       position: relative;
       overflow: hidden;
       font-size: 16px;
+      min-height: 54px; /* Added for better mobile tapping */
     }
 
     .btn::before {
@@ -451,6 +453,56 @@
       background: var(--danger);
     }
 
+    /* Mobile-specific improvements */
+    @media (max-width: 480px) {
+      .card {
+        padding: 20px 16px;
+      }
+      
+      .field {
+        padding: 14px;
+      }
+      
+      .btn {
+        padding: 14px 20px;
+        min-height: 50px;
+      }
+      
+      .security-note {
+        padding: 16px;
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .toggle-option {
+        padding: 14px 12px;
+        font-size: 14px;
+      }
+      
+      .payment-toggle {
+        margin-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .brand {
+        font-size: 24px;
+      }
+      
+      .tag {
+        font-size: 13px;
+      }
+      
+      .toggle-option {
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      .toggle-option i {
+        font-size: 16px;
+      }
+    }
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -524,7 +576,7 @@
             </label>
             <div class="field">
               <i class="fas fa-credit-card"></i>
-              <input type="text" id="accountNumber" placeholder="Enter account number" required maxlength="18">
+              <input type="text" id="accountNumber" placeholder="Enter account number" required maxlength="18" inputmode="numeric">
               <div id="accountValidation" class="validation-message"></div>
             </div>
           </div>
@@ -536,7 +588,7 @@
             </label>
             <div class="field">
               <i class="fas fa-bank"></i>
-              <input type="text" id="ifsc" placeholder="Enter IFSC code" required maxlength="11">
+              <input type="text" id="ifsc" placeholder="Enter IFSC code" required maxlength="11" inputmode="text">
               <div id="ifscValidation" class="validation-message"></div>
             </div>
           </div>
@@ -548,7 +600,7 @@
             </label>
             <div class="field">
               <i class="fas fa-check-circle"></i>
-              <input type="text" id="bankConfirm" placeholder="Re-enter account number" required>
+              <input type="text" id="bankConfirm" placeholder="Re-enter account number" required inputmode="numeric">
               <div id="confirmValidation" class="validation-message"></div>
             </div>
           </div>
@@ -574,7 +626,7 @@
             </label>
             <div class="field">
               <i class="fas fa-at"></i>
-              <input type="text" id="upiId" placeholder="example@upi" pattern=".+@.+" title="Enter a valid UPI ID">
+              <input type="text" id="upiId" placeholder="example@upi" pattern=".+@.+" title="Enter a valid UPI ID" inputmode="email">
               <div id="upiValidation" class="validation-message"></div>
             </div>
             <p class="help">Typically your phone number followed by your UPI provider (e.g. 9876543210@ybl)</p>
@@ -587,7 +639,7 @@
             </label>
             <div class="field">
               <i class="fas fa-check-circle"></i>
-              <input type="text" id="upiConfirm" placeholder="Re-enter UPI ID">
+              <input type="text" id="upiConfirm" placeholder="Re-enter UPI ID" inputmode="email">
               <div id="upiConfirmValidation" class="validation-message"></div>
             </div>
           </div>
@@ -646,6 +698,7 @@
         
         this.paymentMethod = 'bank'; // 'bank' or 'upi'
         this.ifscValidated = false;
+        this.ifscValidationInProgress = false;
         
         this.init();
       }
@@ -678,11 +731,29 @@
         
         // Validation listeners
         this.holderName.addEventListener('input', () => this.validateForm());
-        this.accountNumber.addEventListener('input', () => this.validateForm());
+        this.accountNumber.addEventListener('input', () => {
+          this.validateAccountNumber();
+          this.validateForm();
+        });
         this.ifsc.addEventListener('blur', () => this.validateIFSC());
-        this.bankConfirm.addEventListener('input', () => this.validateForm());
-        this.upiId.addEventListener('input', () => this.validateForm());
-        this.upiConfirm.addEventListener('input', () => this.validateForm());
+        this.ifsc.addEventListener('input', () => {
+          // Reset validation if IFSC is changed
+          this.ifscValidated = false;
+          this.bankInfo.style.display = 'none';
+          this.validateForm();
+        });
+        this.bankConfirm.addEventListener('input', () => {
+          this.validateBankConfirm();
+          this.validateForm();
+        });
+        this.upiId.addEventListener('input', () => {
+          this.validateUPI();
+          this.validateForm();
+        });
+        this.upiConfirm.addEventListener('input', () => {
+          this.validateUPIConfirm();
+          this.validateForm();
+        });
         
         // Handle touch events for better mobile performance
         this.preventScrollJump();
@@ -692,8 +763,11 @@
         // Prevent scroll jump when inputs are focused on mobile
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => {
-          input.addEventListener('focus', () => {
-            window.scrollTo(0, window.scrollY);
+          input.addEventListener('touchstart', () => {
+            // Add a small timeout to ensure the input is focused after the touch event
+            setTimeout(() => {
+              window.scrollTo(0, window.scrollY);
+            }, 10);
           });
         });
       }
@@ -753,17 +827,25 @@
           return false;
         }
         
+        // Prevent multiple validation requests
+        if (this.ifscValidationInProgress) return true;
+        
         // Show loading state
         this.ifscValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
+        this.ifscValidationInProgress = true;
         
         // Simulate API call to validate IFSC
         setTimeout(() => {
+          this.ifscValidationInProgress = false;
           const bankData = {
             'SBIN0123456': { name: 'State Bank of India', branch: 'Mumbai Main Branch' },
             'HDFC0001234': { name: 'HDFC Bank', branch: 'Delhi Central' },
             'ICIC0005678': { name: 'ICICI Bank', branch: 'Bangalore South' },
             'AXIS0123456': { name: 'Axis Bank', branch: 'Chennai Central' },
-            'KKBK0001234': { name: 'Kotak Mahindra Bank', branch: 'Pune Main' }
+            'KKBK0001234': { name: 'Kotak Mahindra Bank', branch: 'Pune Main' },
+            'UBIN0530337': { name: 'Union Bank of India', branch: 'Hyderabad Main' },
+            'CNRB0001000': { name: 'Canara Bank', branch: 'Bengaluru Main' },
+            'BARB0SURATX': { name: 'Bank of Baroda', branch: 'Surat Main' }
           };
           
           if (bankData[value]) {
@@ -811,8 +893,9 @@
           return false;
         }
         
-        // Basic UPI validation (should contain @)
-        if (!value.includes('@')) {
+        // Improved UPI validation
+        const upiPattern = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+        if (!upiPattern.test(value)) {
           this.upiValidation.innerHTML = '<i class="fas fa-times-circle"></i> Invalid UPI ID format';
           this.upiValidation.className = 'validation-message validation-error';
           return false;
@@ -897,9 +980,22 @@
         }
 
         // Save to sessionStorage
-        const workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step5') || '{}');
-        workerData.payment = paymentData;
-        sessionStorage.setItem('hirewale_worker_step6', JSON.stringify(workerData));
+        try {
+          // Try to get existing data from step 6 first, then step 5 as fallback
+          let workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step6') || '{}');
+          
+          // If no data in step6, try to get from step5
+          if (Object.keys(workerData).length === 0) {
+            workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step5') || '{}');
+          }
+          
+          workerData.payment = paymentData;
+          sessionStorage.setItem('hirewale_worker_step6', JSON.stringify(workerData));
+        } catch (error) {
+          console.error('Error saving data:', error);
+          this.showToast('Error saving your data. Please try again.', 'error');
+          return;
+        }
         
         // Show loading state
         this.showLoading(true);
@@ -915,7 +1011,14 @@
       
       loadSavedData() {
         try {
-          const savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step6') || '{}');
+          // Try to load from step6 first, then step5 as fallback
+          let savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step6') || '{}');
+          
+          // If no data in step6, try to get from step5
+          if (Object.keys(savedData).length === 0) {
+            savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step5') || '{}');
+          }
+          
           if (savedData.payment) {
             this.paymentMethod = savedData.payment.method || 'bank';
             this.updatePaymentMethod();
@@ -926,11 +1029,17 @@
               this.ifsc.value = savedData.payment.bankDetails.ifsc || '';
               this.bankConfirm.value = savedData.payment.bankDetails.confirmAccount || '';
               
-              if (savedData.payment.bankDetails.bankInfo) {
+              if (savedData.payment.bankDetails.bankInfo && savedData.payment.bankDetails.bankInfo.name) {
                 this.bankName.textContent = savedData.payment.bankDetails.bankInfo.name || '';
                 this.bankBranch.textContent = savedData.payment.bankDetails.bankInfo.branch || '';
                 this.bankInfo.style.display = 'block';
                 this.ifscValidated = true;
+                
+                // Validate IFSC format if we have the data
+                if (this.ifsc.value) {
+                  this.ifscValidation.innerHTML = '<i class="fas fa-check-circle"></i> IFSC validated';
+                  this.ifscValidation.className = 'validation-message validation-ok';
+                }
               }
             } else if (this.paymentMethod === 'upi' && savedData.payment.upiDetails) {
               this.upiId.value = savedData.payment.upiDetails.upiId || '';
