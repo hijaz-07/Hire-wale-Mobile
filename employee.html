@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Hirewale · Worker Registration · Step 1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,6 +33,7 @@
       margin: 0;
       padding: 0;
       font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -80,7 +81,7 @@
       border-radius: 10px;
       margin: 20px 0;
       overflow: hidden;
-      height: 6px;
+      height: 8px;
     }
 
     .progress-bar {
@@ -145,6 +146,7 @@
     .field i {
       color: var(--muted);
       font-size: 16px;
+      flex-shrink: 0;
     }
 
     .field input {
@@ -155,6 +157,7 @@
       background: transparent;
       color: var(--ink);
       font-size: 16px;
+      min-width: 0;
     }
 
     .field input::placeholder {
@@ -166,7 +169,7 @@
       background: var(--brand-600);
       color: #fff;
       font-weight: 600;
-      padding: 10px 14px;
+      padding: 12px 16px;
       border-radius: 10px;
       cursor: pointer;
       transition: var(--transition);
@@ -175,6 +178,7 @@
       gap: 6px;
       white-space: nowrap;
       font-size: 14px;
+      min-height: 44px;
     }
 
     .btn-inline:hover {
@@ -288,6 +292,7 @@
       justify-content: center;
       gap: 8px;
       font-size: 16px;
+      min-height: 56px;
     }
 
     .btn-secondary {
@@ -323,6 +328,11 @@
       cursor: pointer;
       font-size: 16px;
       padding: 4px;
+      min-width: 32px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .hint-box {
@@ -358,18 +368,107 @@
     @media (max-width: 480px) {
       body {
         padding: 12px;
+        justify-content: center;
+      }
+      
+      .container {
+        max-width: 100%;
+      }
+      
+      header {
+        margin-bottom: 16px;
+      }
+      
+      .brand {
+        font-size: 22px;
+      }
+      
+      .tag {
+        font-size: 13px;
+      }
+      
+      .progress-container {
+        height: 10px;
+        margin: 16px 0;
       }
       
       .card {
         padding: 20px 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+      }
+      
+      form {
+        gap: 16px;
       }
       
       .field {
-        padding: 12px 14px;
+        padding: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .mobile-field-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+      }
+      
+      .mobile-input-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+      }
+      
+      .btn-inline {
+        width: 100%;
+        justify-content: center;
+        padding: 14px;
+        font-size: 15px;
       }
       
       .btn {
-        padding: 14px 16px;
+        padding: 16px;
+        font-size: 15px;
+        min-height: 52px;
+      }
+      
+      .field input {
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      .checks {
+        grid-template-columns: 1fr;
+      }
+      
+      .actions {
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .brand {
+        font-size: 20px;
+      }
+      
+      .tag {
+        font-size: 12px;
+      }
+      
+      .card {
+        padding: 18px 14px;
+      }
+      
+      .field {
+        padding: 14px;
+      }
+      
+      .btn {
+        padding: 14px;
+        font-size: 14px;
       }
     }
 
@@ -391,6 +490,67 @@
       .checks {
         grid-template-columns: repeat(2, 1fr);
       }
+    }
+    
+    /* Improved mobile number field for small screens */
+    .mobile-field-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .mobile-input-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .country-code {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    
+    /* Animation for better mobile UX */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15%, 45%, 75% { transform: translateX(-10px); }
+      30%, 60%, 90% { transform: translateX(10px); }
+    }
+    
+    .shake {
+      animation: shake 0.6s ease;
+    }
+    
+    /* Improved OTP input for mobile */
+    .otp-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .otp-field-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Better password visibility toggle */
+    .password-field {
+      position: relative;
+      width: 100%;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
     }
   </style>
 </head>
@@ -425,23 +585,29 @@
             <i class="fas fa-mobile-alt"></i>
             Mobile Number <span class="help">(OTP verification required)</span>
           </label>
-          <div class="field">
-            <i class="fas fa-flag"></i>
-            <span>+91</span>
-            <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="9876543210" required />
+          <div class="mobile-field-wrapper">
+            <div class="field">
+              <div class="mobile-input-container">
+                <i class="fas fa-flag"></i>
+                <div class="country-code">+91</div>
+                <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="9876543210" required />
+              </div>
+            </div>
             <button type="button" id="sendOtpBtn" class="btn-inline">
               <i class="fas fa-paper-plane"></i> Send OTP
             </button>
           </div>
           
           <div class="otp-wrap" id="otpWrap">
-            <div class="field">
-              <i class="fas fa-key"></i>
-              <input id="otp" name="otp" type="text" inputmode="numeric" minlength="6" maxlength="6" placeholder="Enter 6-digit OTP" />
+            <div class="otp-input-container">
+              <div class="field">
+                <i class="fas fa-key"></i>
+                <input id="otp" name="otp" type="text" inputmode="numeric" minlength="6" maxlength="6" placeholder="Enter 6-digit OTP" />
+              </div>
+              <button type="button" id="verifyOtpBtn" class="btn-inline">
+                <i class="fas fa-check-circle"></i> Verify OTP
+              </button>
             </div>
-            <button type="button" id="verifyOtpBtn" class="btn-inline">
-              <i class="fas fa-check-circle"></i> Verify
-            </button>
             <div id="otpStatus" class="status" aria-live="polite"></div>
           </div>
           
@@ -472,7 +638,7 @@
             <i class="fas fa-lock"></i>
             Create Password
           </label>
-          <div class="field">
+          <div class="field password-field">
             <i class="fas fa-lock"></i>
             <input id="password" name="password" type="password" placeholder="At least 8 characters" required />
             <button type="button" class="password-toggle" id="passwordToggle">
@@ -498,7 +664,7 @@
             <i class="fas fa-lock"></i>
             Confirm Password
           </label>
-          <div class="field">
+          <div class="field password-field">
             <i class="fas fa-lock"></i>
             <input id="confirm" name="confirm" type="password" placeholder="Re-type password" required />
             <button type="button" class="password-toggle" id="confirmToggle">
@@ -509,7 +675,7 @@
         </div>
 
         <div class="actions">
-          <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+          <button type="button" class="btn btn-secondary" onclick="window.location.href='home.html'">
             <i class="fas fa-arrow-left"></i> Back to Home
           </button>
           <button type="submit" id="nextBtn" class="btn btn-primary" disabled>
@@ -528,6 +694,7 @@
   <script>
     // —— Helpers ——
     const el = (id) => document.getElementById(id);
+    const isMobile = () => window.innerWidth <= 480;
 
     // Elements
     const fullName = el('fullName');
@@ -557,17 +724,14 @@
     let timerHandle = null;
 
     // Password visibility toggles
-    passwordToggle.addEventListener('click', () => {
-      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-      password.setAttribute('type', type);
-      passwordToggle.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-    });
+    const togglePassword = (field, toggle) => {
+      const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+      field.setAttribute('type', type);
+      toggle.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    };
 
-    confirmToggle.addEventListener('click', () => {
-      const type = confirm.getAttribute('type') === 'password' ? 'text' : 'password';
-      confirm.setAttribute('type', type);
-      confirmToggle.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-    });
+    passwordToggle.addEventListener('click', () => togglePassword(password, passwordToggle));
+    confirmToggle.addEventListener('click', () => togglePassword(confirm, confirmToggle));
 
     // Update checklist with better visual feedback
     function updateChecklist(ok, el) {
@@ -670,6 +834,8 @@
       if (!valid) {
         otpStatus.textContent = 'Please enter a valid 10-digit Indian mobile number';
         otpStatus.className = 'status err';
+        mobile.parentElement.parentElement.classList.add('shake');
+        setTimeout(() => mobile.parentElement.parentElement.classList.remove('shake'), 600);
         return;
       }
 
@@ -687,6 +853,11 @@
       
       // Start the resend timer
       startResendTimer(30);
+      
+      // Auto-focus OTP field on mobile
+      if (isMobile()) {
+        setTimeout(() => otp.focus(), 300);
+      }
     });
 
     verifyOtpBtn.addEventListener('click', () => {
@@ -703,6 +874,8 @@
         otpVerified = false;
         otpStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid OTP. Please try again.';
         otpStatus.className = 'status err';
+        otp.parentElement.classList.add('shake');
+        setTimeout(() => otp.parentElement.classList.remove('shake'), 600);
       }
       updateNextState();
     });
@@ -723,6 +896,7 @@
       sessionStorage.setItem('hirewale_worker_step1', JSON.stringify(payload));
       
       // Show loading state on button
+      const originalText = nextBtn.innerHTML;
       nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
       nextBtn.disabled = true;
       
@@ -732,9 +906,21 @@
       }, 1500);
     });
 
+    // Better mobile input handling
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('blur', () => {
+        // Scroll back to top on mobile when keyboard closes
+        if (isMobile()) {
+          setTimeout(() => window.scrollTo(0, 0), 100);
+        }
+      });
+    });
+
     // Initialize UI state
     updateNextState();
+    
+    // Prevent zoom on input focus on mobile iOS
+    document.addEventListener('touchstart', function() {}, {passive: true});
   </script>
 </body>
-
 </html>
