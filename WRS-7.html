@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hirewale — Worker Registration (Step 7)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-600: #0ea5e9;
+      --brand-700: #0284c7;
+      --brand-500: #38bdf8;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --muted-light: #94a3b8;
+      --bg: #f8fafc;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --border: #e2e8f0;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --glass-bg: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-shadow: 0 8px 32px rgba(2, 132, 199, 0.1);
+      --transition: all 0.3s ease;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100svh;
+      color: var(--ink);
+      background: radial-gradient(800px 400px at 10% 10%, #e0f2fe 0%, transparent 60%),
+                  radial-gradient(700px 350px at 90% 20%, #bae6fd 0%, transparent 60%),
+                  linear-gradient(180deg, #f0f9ff 0%, #ffffff 40%, #f8fafc 100%);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 10px;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .tag {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+      height: 8px;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 87.5%;
+      background: linear-gradient(90deg, var(--brand-500), var(--brand-700));
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--glass-shadow);
+      padding: 24px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .terms-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    @media (min-width: 400px) {
+      .terms-header {
+        flex-direction: row;
+        text-align: left;
+      }
+    }
+
+    .terms-icon {
+      width: 60px;
+      height: 60px;
+      background: #f0f9ff;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--brand-600);
+    }
+
+    .terms-title {
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .read-time {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    @media (min-width: 400px) {
+      .read-time {
+        justify-content: flex-start;
+      }
+    }
+
+    .terms-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      background: #f9fafb;
+      height: 300px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      transition: var(--transition);
+    }
+
+    .terms-box:focus-within {
+      box-shadow: inset 0 0 0 2px var(--brand-500);
+    }
+
+    .terms-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .terms-box::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .terms-box::-webkit-scrollbar-thumb {
+      background: var(--brand-500);
+      border-radius: 10px;
+    }
+
+    .terms-box p {
+      margin-bottom: 16px;
+      padding-left: 8px;
+      border-left: 2px solid transparent;
+      transition: var(--transition);
+    }
+
+    .terms-box p:active {
+      border-left: 2px solid var(--brand-500);
+      padding-left: 12px;
+    }
+
+    .terms-box strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+    }
+
+    .checkbox-container:active {
+      background: #f0f9ff;
+      transform: translateY(-2px);
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--muted-light);
+      border-radius: 6px;
+      margin-top: 2px;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .checkbox-container input[type="checkbox"]:checked {
+      background: var(--brand-600);
+      border-color: var(--brand-600);
+    }
+
+    .checkbox-container input[type="checkbox"]:checked::after {
+      content: "✓";
+      position: absolute;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .checkbox-label {
+      flex: 1;
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--ink);
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    .checkbox-label a {
+      color: var(--brand-600);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .checkbox-label a:active {
+      color: var(--brand-700);
+      text-decoration: underline;
+    }
+
+    .security-note {
+      background: #f0f9ff;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-top: 16px;
+      border-left: 4px solid var(--brand-500);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .security-note i {
+      font-size: 20px;
+      color: var(--brand-600);
+      margin-top: 2px;
+    }
+
+    .security-content h4 {
+      margin-bottom: 8px;
+      color: var(--brand-700);
+    }
+
+    .security-content p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (min-width: 480px) {
+      .actions {
+        flex-direction: row;
+      }
+    }
+
+    .btn {
+      border: 0;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      font-size: 16px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+      transition: left 0.7s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .btn-secondary:active {
+      background: #e2e8f0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary:disabled::before {
+      display: none;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+
+    .loading-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--brand-500);
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--ink);
+      color: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    /* Prevent zoom on input focus for mobile */
+    @media (max-width: 480px) {
+      input, select {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">Hirewale</div>
+      <div class="tag">Step 7 of 8 — Terms & Conditions</div>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+
+    <section class="card">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+      </div>
+
+      <form id="termsForm">
+        <div class="terms-header">
+          <div class="terms-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <div>
+            <h2 class="terms-title">Terms & Conditions Agreement</h2>
+            <div class="read-time">
+              <i class="fas fa-clock"></i> Estimated reading time: 3 minutes
+            </div>
+          </div>
+        </div>
+
+        <div class="terms-box">
+          <p><strong>1.</strong> Workers must maintain professional behavior with customers at all times. Any reported misconduct may result in temporary suspension or permanent termination of your account after investigation.</p>
+          
+          <p><strong>2.</strong> Commission of 15-20% will be applied on each completed job as per Hirewale policy. This commission covers platform maintenance, customer support, and payment processing services.</p>
+          
+          <p><strong>3.</strong> Cancellation by worker should be avoided; repeated cancellations may affect your ranking and visibility on the platform. Cancellations with less than 24 hours notice will incur penalty points.</p>
+          
+          <p><strong>4.</strong> Personal information, bank details, and documents must be accurate and valid. You are required to update any changes to your information within 14 days of the change occurring.</p>
+          
+          <p><strong>5.</strong> Hirewale reserves the right to verify submitted documents and profiles. We may perform background checks or request additional verification at our discretion.</p>
+          
+          <p><strong>6.</strong> Any fraudulent activity, including but not limited to fake reviews, identity theft, or payment fraud will lead to permanent account suspension and may result in legal action.</p>
+          
+          <p><strong>7.</strong> By agreeing, you accept the Hirewale Service Policy and Terms & Conditions in their entirety. This includes our Privacy Policy, Payment Terms, and Community Guidelines.</p>
+          
+          <p><strong>8.</strong> You retain ownership of your intellectual property but grant Hirewale a license to use your profile information and work portfolio for marketing and platform operations.</p>
+          
+          <p><strong>9.</strong> Disputes between workers and clients should be reported through our official resolution system. Hirewale will mediate disputes according to our published Dispute Resolution Policy.</p>
+          
+          <p><strong>10.</strong> These terms may be updated periodically. Continued use of the platform constitutes acceptance of the updated terms. Major changes will be communicated via email 30 days in advance.</p>
+        </div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="agree" required>
+          <label for="agree" class="checkbox-label">
+            I have read and agree to Hirewale's <a href="#">Terms & Conditions</a>, <a href="#">Privacy Policy</a>, and <a href="#">Service Agreement</a>. I understand that this is a legally binding agreement.
+          </label>
+        </div>
+
+        <div class="security-note">
+          <i class="fas fa-shield-alt"></i>
+          <div class="security-content">
+            <h4>Your Agreement is Secure</h4>
+            <p>This agreement is digitally recorded and encrypted. You can access your accepted terms at any time through your account settings.</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" id="prevBtn">
+            <i class="fas fa-arrow-left"></i> Previous
+          </button>
+          <button type="submit" id="nextBtn" class="btn btn-primary" disabled>
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    class TermsRegistration {
+      constructor() {
+        // DOM Elements
+        this.termsForm = document.getElementById('termsForm');
+        this.agreeCheckbox = document.getElementById('agree');
+        this.nextBtn = document.getElementById('nextBtn');
+        this.prevBtn = document.getElementById('prevBtn');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.toast = document.getElementById('toast');
+        this.checkboxContainer = this.agreeCheckbox.closest('.checkbox-container');
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupEventListeners();
+        this.loadSavedData();
+      }
+      
+      setupEventListeners() {
+        // Form submission
+        this.termsForm.addEventListener('submit', (e) => this.handleSubmit(e));
+        
+        // Previous button
+        this.prevBtn.addEventListener('click', () => {
+          window.location.href = 'WRS-6.html';
+        });
+        
+        // Checkbox change event
+        this.agreeCheckbox.addEventListener('change', () => {
+          this.nextBtn.disabled = !this.agreeCheckbox.checked;
+          
+          // Add pulse animation when user agrees
+          if (this.agreeCheckbox.checked) {
+            this.nextBtn.classList.add('pulse');
+          } else {
+            this.nextBtn.classList.remove('pulse');
+          }
+        });
+        
+        // Handle touch events for better mobile performance
+        this.preventScrollJump();
+      }
+      
+      preventScrollJump() {
+        // Prevent scroll jump when inputs are focused on mobile
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+          input.addEventListener('focus', () => {
+            window.scrollTo(0, window.scrollY);
+          });
+        });
+      }
+      
+      async handleSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.agreeCheckbox.checked) {
+          // Show validation error with animation
+          this.checkboxContainer.style.animation = 'shake 0.5s';
+          setTimeout(() => {
+            this.checkboxContainer.style.animation = '';
+          }, 500);
+          
+          this.showToast('Please agree to the terms and conditions to continue.', 'error');
+          return;
+        }
+        
+        // Save to sessionStorage
+        const workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step6') || '{}');
+        workerData.agreedTerms = true;
+        workerData.agreedTimestamp = new Date().toISOString();
+        sessionStorage.setItem('hirewale_worker_step7', JSON.stringify(workerData));
+        
+        // Show loading state
+        this.showLoading(true);
+        this.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        this.nextBtn.disabled = true;
+
+        // Simulate API call delay
+        setTimeout(() => {
+          this.showLoading(false);
+          window.location.href = 'WRS-8.html';
+        }, 1500);
+      }
+      
+      loadSavedData() {
+        try {
+          const savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step7') || '{}');
+          if (savedData.agreedTerms) {
+            this.agreeCheckbox.checked = true;
+            this.nextBtn.disabled = false;
+            this.nextBtn.classList.add('pulse');
+          }
+        } catch (error) {
+          console.error('Error loading saved data:', error);
+        }
+      }
+      
+      showLoading(show) {
+        if (show) {
+          this.loadingOverlay.classList.add('visible');
+        } else {
+          this.loadingOverlay.classList.remove('visible');
+        }
+      }
+      
+      showToast(message, type = 'default') {
+        this.toast.textContent = message;
+        this.toast.className = `toast ${type}`;
+        this.toast.classList.add('visible');
+        
+        setTimeout(() => {
+          this.toast.classList.remove('visible');
+        }, 3000);
+      }
+    }
+    
+    // Initialize the application when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      new TermsRegistration();
+    });
+  </script>
+</body>
+</html>

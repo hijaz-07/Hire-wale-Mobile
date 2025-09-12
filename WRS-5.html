@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hirewale — Worker Registration (Step 5)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-600: #0ea5e9;
+      --brand-700: #0284c7;
+      --brand-500: #38bdf8;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --muted-light: #94a3b8;
+      --bg: #f8fafc;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --border: #e2e8f0;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --glass-bg: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-shadow: 0 8px 32px rgba(2, 132, 199, 0.1);
+      --transition: all 0.3s ease;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100svh;
+      color: var(--ink);
+      background: radial-gradient(800px 400px at 10% 10%, #e0f2fe 0%, transparent 60%),
+                  radial-gradient(700px 350px at 90% 20%, #bae6fd 0%, transparent 60%),
+                  linear-gradient(180deg, #f0f9ff 0%, #ffffff 40%, #f8fafc 100%);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 10px;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .tag {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+      height: 8px;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 62.5%;
+      background: linear-gradient(90deg, var(--brand-500), var(--brand-700));
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--glass-shadow);
+      padding: 24px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .optional-badge {
+      background: #f1f5f9;
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .upload-container {
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 2px dashed var(--border);
+      text-align: center;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .upload-container:hover {
+      border-color: var(--brand-500);
+    }
+
+    .upload-container.dragover {
+      border-color: var(--brand-600);
+      background: rgba(14, 165, 233, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      color: var(--brand-600);
+      margin-bottom: 12px;
+    }
+
+    .upload-text h3 {
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .upload-text p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .upload-btn {
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+      transition: left 0.7s ease;
+    }
+
+    .upload-btn:active {
+      transform: scale(0.98);
+    }
+
+    .file-input {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+    }
+
+    .preview-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .preview-card {
+      background: white;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+
+    .preview-card:active {
+      transform: scale(0.98);
+    }
+
+    .preview-image {
+      height: 120px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .video-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .preview-details {
+      padding: 12px;
+    }
+
+    .preview-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preview-size {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .preview-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .preview-btn {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: none;
+    }
+
+    .preview-btn:active {
+      transform: scale(0.95);
+    }
+
+    .preview-view {
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .preview-view:active {
+      background: #e2e8f0;
+    }
+
+    .preview-remove {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .preview-remove:active {
+      background: #fecaca;
+    }
+
+    .info-box {
+      background: #f0f9ff;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-top: 16px;
+      border-left: 4px solid var(--brand-500);
+    }
+
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .info-header i {
+      font-size: 18px;
+      color: var(--brand-600);
+    }
+
+    .info-header h3 {
+      margin: 0;
+      color: var(--brand-700);
+      font-size: 16px;
+    }
+
+    .info-content {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .info-content ul {
+      padding-left: 20px;
+      margin: 12px 0;
+    }
+
+    .info-content li {
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      border: 0;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      font-size: 16px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+      transition: left 0.7s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .btn-secondary:active {
+      background: #e2e8f0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary:disabled::before {
+      display: none;
+    }
+
+    .skip-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    .skip-btn:active {
+      color: var(--brand-600);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+
+    .loading-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--brand-500);
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--ink);
+      color: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: var(--transition);
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .modal-close:active {
+      background: #f1f5f9;
+      color: var(--danger);
+    }
+
+    .modal-body {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .modal-image {
+      max-width: 100%;
+      max-height: 50vh;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal-video {
+      width: 100%;
+      max-height: 50vh;
+      border-radius: var(--radius-md);
+      background: #000;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Responsive adjustments for larger mobile devices */
+    @media (min-width: 400px) {
+      .preview-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 480px) {
+      body {
+        padding: 20px;
+      }
+      
+      .shell {
+        padding: 0;
+      }
+      
+      .actions {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .upload-btn {
+        width: auto;
+      }
+      
+      .skip-btn {
+        margin: 0;
+      }
+    }
+
+    /* Prevent zoom on input focus for mobile */
+    @media (max-width: 480px) {
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">Hirewale</div>
+      <div class="tag">Step 5 of 8 — Skill Proof (Optional)</div>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+
+    <section class="card">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+      </div>
+
+      <form id="skillForm">
+        <!-- Certificate Upload -->
+        <div class="form-group">
+          <label>
+            <i class="fas fa-certificate"></i>
+            Upload Certificate
+            <span class="optional-badge">Optional</span>
+          </label>
+          <div class="upload-container" id="certificateDropzone">
+            <div class="upload-icon">
+              <i class="fas fa-file-certificate"></i>
+            </div>
+            <div class="upload-text">
+              <h3>Upload Your Certificates</h3>
+              <p>Showcase your qualifications and certifications</p>
+            </div>
+            <button type="button" class="upload-btn" id="certificateBtn">
+              <i class="fas fa-upload"></i> Choose File
+            </button>
+            <input type="file" id="certificate" class="file-input" accept=".jpg,.jpeg,.png,.pdf">
+          </div>
+          <div class="preview-container" id="certificatePreview"></div>
+        </div>
+
+        <!-- Video Upload -->
+        <div class="form-group">
+          <label>
+            <i class="fas fa-video"></i>
+            Introduction Video
+            <span class="optional-badge">Optional</span>
+          </label>
+          <div class="upload-container" id="videoDropzone">
+            <div class="upload-icon">
+              <i class="fas fa-film"></i>
+            </div>
+            <div class="upload-text">
+              <h3>Upload Introduction Video</h3>
+              <p>Introduce yourself and showcase your skills (max 2 minutes)</p>
+            </div>
+            <button type="button" class="upload-btn" id="videoBtn">
+              <i class="fas fa-upload"></i> Choose Video
+            </button>
+            <input type="file" id="introVideo" class="file-input" accept="video/*">
+          </div>
+          <div class="preview-container" id="videoPreview"></div>
+        </div>
+
+        <!-- Benefits Information -->
+        <div class="info-box">
+          <div class="info-header">
+            <i class="fas fa-info-circle"></i>
+            <h3>Why Add Skill Proof?</h3>
+          </div>
+          <div class="info-content">
+            <p>Adding proof of your skills can significantly increase your chances of getting hired:</p>
+            <ul>
+              <li><strong>70% higher</strong> chance of being selected for jobs</li>
+              <li>Builds <strong>trust and credibility</strong> with potential clients</li>
+              <li>Helps you <strong>stand out</strong> from other workers</li>
+              <li>Can lead to <strong>higher paying jobs</strong></li>
+            </ul>
+            <p>You can skip this step now and add these later from your profile.</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" id="prevBtn">
+            <i class="fas fa-arrow-left"></i> Previous
+          </button>
+          <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+            <button type="button" class="skip-btn" id="skipBtn">
+              <i class="fas fa-forward"></i> Skip This Step
+            </button>
+            <button type="submit" id="nextBtn" class="btn btn-primary">
+              Next <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Preview Modal -->
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Preview</h3>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img src="" alt="Preview" class="modal-image" id="modalImage" style="display: none;">
+        <video controls class="modal-video" id="modalVideo" style="display: none;">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class SkillProof {
+      constructor() {
+        // DOM Elements
+        this.certificateInput = document.getElementById('certificate');
+        this.videoInput = document.getElementById('introVideo');
+        this.certificateBtn = document.getElementById('certificateBtn');
+        this.videoBtn = document.getElementById('videoBtn');
+        this.certificateDropzone = document.getElementById('certificateDropzone');
+        this.videoDropzone = document.getElementById('videoDropzone');
+        this.certificatePreview = document.getElementById('certificatePreview');
+        this.videoPreview = document.getElementById('videoPreview');
+        this.nextBtn = document.getElementById('nextBtn');
+        this.prevBtn = document.getElementById('prevBtn');
+        this.skipBtn = document.getElementById('skipBtn');
+        this.skillForm = document.getElementById('skillForm');
+        this.previewModal = document.getElementById('previewModal');
+        this.modalImage = document.getElementById('modalImage');
+        this.modalVideo = document.getElementById('modalVideo');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.modalClose = document.getElementById('modalClose');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.toast = document.getElementById('toast');
+        
+        this.certificateFile = null;
+        this.videoFile = null;
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupEventListeners();
+        this.loadSavedData();
+      }
+      
+      setupEventListeners() {
+        // File input triggers
+        this.certificateBtn.addEventListener('click', () => this.certificateInput.click());
+        this.videoBtn.addEventListener('click', () => this.videoInput.click());
+        
+        // File input changes
+        this.certificateInput.addEventListener('change', () => {
+          if (this.certificateInput.files.length) {
+            this.handleCertificateUpload(this.certificateInput.files[0]);
+          }
+        });
+        
+        this.videoInput.addEventListener('change', () => {
+          if (this.videoInput.files.length) {
+            this.handleVideoUpload(this.videoInput.files[0]);
+          }
+        });
+        
+        // Setup drag and drop
+        this.setupDropzone(this.certificateDropzone, this.certificateInput, (file) => this.handleCertificateUpload(file));
+        this.setupDropzone(this.videoDropzone, this.videoInput, (file) => this.handleVideoUpload(file));
+        
+        // Form submission
+        this.skillForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.submitForm();
+        });
+        
+        // Previous button
+        this.prevBtn.addEventListener('click', () => {
+          window.location.href = 'WRS-4.html';
+        });
+        
+        // Skip button
+        this.skipBtn.addEventListener('click', () => {
+          this.submitForm(true);
+        });
+        
+        // Modal close
+        this.modalClose.addEventListener('click', () => {
+          this.previewModal.style.display = 'none';
+          this.modalVideo.pause();
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+          if (e.target === this.previewModal) {
+            this.previewModal.style.display = 'none';
+            this.modalVideo.pause();
+          }
+        });
+        
+        // Handle touch events for better mobile performance
+        this.preventScrollJump();
+      }
+      
+      preventScrollJump() {
+        // Prevent scroll jump when inputs are focused on mobile
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+          input.addEventListener('focus', () => {
+            window.scrollTo(0, window.scrollY);
+          });
+        });
+      }
+      
+      setupDropzone(dropzone, input, handler) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, this.preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, this.highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, this.unhighlight, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => this.handleDrop(e, input, handler), false);
+      }
+      
+      preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      highlight(e) {
+        e.currentTarget.classList.add('dragover');
+      }
+      
+      unhighlight(e) {
+        e.currentTarget.classList.remove('dragover');
+      }
+      
+      handleDrop(e, input, handler) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+          input.files = files;
+          handler(files[0]);
+        }
+      }
+      
+      handleCertificateUpload(file) {
+        // Validate file
+        if (!this.validateFile(file, ['jpg', 'jpeg', 'png', 'pdf'], 5)) {
+          return;
+        }
+
+        this.certificateFile = file;
+        this.displayFilePreview(file, this.certificatePreview, 'certificate');
+        
+        this.showToast('Certificate uploaded successfully!', 'success');
+      }
+      
+      handleVideoUpload(file) {
+        // Validate file
+        if (!this.validateFile(file, ['mp4', 'mov', 'avi', 'webm'], 50)) {
+          return;
+        }
+
+        this.videoFile = file;
+        this.displayFilePreview(file, this.videoPreview, 'video');
+        
+        this.showToast('Video uploaded successfully!', 'success');
+      }
+      
+      validateFile(file, allowedTypes, maxSizeMB) {
+        const extension = file.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes(extension)) {
+          this.showToast(`Invalid file type. Allowed types: ${allowedTypes.join(', ').toUpperCase()}`, 'error');
+          return false;
+        }
+
+        if (file.size > maxSizeMB * 1024 * 1024) {
+          this.showToast(`File too large. Maximum size is ${maxSizeMB}MB.`, 'error');
+          return false;
+        }
+
+        return true;
+      }
+      
+      displayFilePreview(file, container, type) {
+        container.innerHTML = '';
+
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+
+        const isImage = file.type.includes('image');
+        const isPDF = file.type.includes('pdf');
+        const isVideo = file.type.includes('video');
+        
+        if (isImage) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            card.innerHTML = `
+              <div class="preview-image" style="background-image: url('${e.target.result}')"></div>
+              <div class="preview-details">
+                <div class="preview-name">${file.name}</div>
+                <div class="preview-size">${this.formatFileSize(file.size)}</div>
+                <div class="preview-actions">
+                  <button class="preview-btn preview-view" data-type="${type}">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                  <button class="preview-btn preview-remove" data-type="${type}">
+                    <i class="fas fa-trash"></i> Remove
+                  </button>
+                </div>
+              </div>
+            `;
+            container.appendChild(card);
+            
+            // Add event listeners
+            card.querySelector('.preview-view').addEventListener('click', () => {
+              this.showPreview(e.target.result, file.name, 'image');
+            });
+            
+            card.querySelector('.preview-remove').addEventListener('click', () => {
+              this.removeFile(type);
+            });
+          };
+          reader.readAsDataURL(file);
+        } else if (isPDF) {
+          card.innerHTML = `
+            <div class="preview-image" style="background: #e2e8f0; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-file-pdf" style="font-size: 48px; color: #dc2626;"></i>
+            </div>
+            <div class="preview-details">
+              <div class="preview-name">${file.name}</div>
+              <div class="preview-size">${this.formatFileSize(file.size)}</div>
+              <div class="preview-actions">
+                <button class="preview-btn preview-view" data-type="${type}">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <button class="preview-btn preview-remove" data-type="${type}">
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+          
+          // Add event listeners
+          card.querySelector('.preview-view').addEventListener('click', () => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              // For PDF we would typically open in a new tab
+              const blob = new Blob([file], { type: 'application/pdf' });
+              const url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+            };
+            reader.readAsArrayBuffer(file);
+          });
+          
+          card.querySelector('.preview-remove').addEventListener('click', () => {
+            this.removeFile(type);
+          });
+        } else if (isVideo) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            card.innerHTML = `
+              <div class="preview-image" style="background-image: url('https://via.placeholder.com/300x150/eeeeee/999999?text=Video+Thumbnail');">
+                <div class="video-indicator">
+                  <i class="fas fa-play"></i>
+                </div>
+              </div>
+              <div class="preview-details">
+                <div class="preview-name">${file.name}</div>
+                <div class="preview-size">${this.formatFileSize(file.size)}</div>
+                <div class="preview-actions">
+                  <button class="preview-btn preview-view" data-type="${type}">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                  <button class="preview-btn preview-remove" data-type="${type}">
+                    <i class="fas fa-trash"></i> Remove
+                  </button>
+                </div>
+              </div>
+            `;
+            container.appendChild(card);
+            
+            // Add event listeners
+            card.querySelector('.preview-view').addEventListener('click', () => {
+              this.showPreview(e.target.result, file.name, 'video');
+            });
+            
+            card.querySelector('.preview-remove').addEventListener('click', () => {
+              this.removeFile(type);
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+      
+      formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+      
+      showPreview(src, name, type) {
+        if (type === 'image') {
+          this.modalImage.src = src;
+          this.modalImage.style.display = 'block';
+          this.modalVideo.style.display = 'none';
+        } else if (type === 'video') {
+          this.modalVideo.src = src;
+          this.modalVideo.style.display = 'block';
+          this.modalImage.style.display = 'none';
+        }
+        
+        this.modalTitle.textContent = name;
+        this.previewModal.style.display = 'flex';
+      }
+      
+      removeFile(type) {
+        if (type === 'certificate') {
+          this.certificateFile = null;
+          this.certificateInput.value = '';
+          this.certificatePreview.innerHTML = '';
+        } else if (type === 'video') {
+          this.videoFile = null;
+          this.videoInput.value = '';
+          this.videoPreview.innerHTML = '';
+        }
+        
+        this.showToast('File removed', 'success');
+      }
+      
+      submitForm(skip = false) {
+        // Prepare skill proof data
+        const skillData = {
+          certificate: this.certificateFile ? {
+            name: this.certificateFile.name,
+            size: this.certificateFile.size,
+            type: this.certificateFile.type
+          } : null,
+          video: this.videoFile ? {
+            name: this.videoFile.name,
+            size: this.videoFile.size,
+            type: this.videoFile.type
+          } : null,
+          skipped: skip
+        };
+
+        // Save to sessionStorage
+        const workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step4') || '{}');
+        workerData.skillProof = skillData;
+        sessionStorage.setItem('hirewale_worker_step5', JSON.stringify(workerData));
+        
+        // Show loading state
+        this.showLoading(true);
+        this.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        this.nextBtn.disabled = true;
+
+        // Simulate API call delay
+        setTimeout(() => {
+          this.showLoading(false);
+          window.location.href = 'WRS-6.html';
+        }, 1500);
+      }
+      
+      loadSavedData() {
+        try {
+          const savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step5') || '{}');
+          if (savedData.skillProof) {
+            // Note: We can't restore the actual files from sessionStorage,
+            // but we can indicate that they were previously uploaded
+            if (savedData.skillProof.certificate) {
+              this.showToast('Certificate was previously uploaded', 'success');
+            }
+            
+            if (savedData.skillProof.video) {
+              this.showToast('Video was previously uploaded', 'success');
+            }
+          }
+        } catch (error) {
+          console.error('Error loading saved data:', error);
+        }
+      }
+      
+      showLoading(show) {
+        if (show) {
+          this.loadingOverlay.classList.add('visible');
+        } else {
+          this.loadingOverlay.classList.remove('visible');
+        }
+      }
+      
+      showToast(message, type = 'default') {
+        this.toast.textContent = message;
+        this.toast.className = `toast ${type}`;
+        this.toast.classList.add('visible');
+        
+        setTimeout(() => {
+          this.toast.classList.remove('visible');
+        }, 3000);
+      }
+    }
+    
+    // Initialize the application when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      new SkillProof();
+    });
+  </script>
+</body>
+</html>

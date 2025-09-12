@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hirewale · View Jobs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --brand-600:#0ea5e9;
+      --brand-700:#0284c7;
+      --brand-success:#16a34a;
+      --brand-warning:#f59e0b;
+      --brand-danger:#dc2626;
+      --ink:#0f172a;
+      --card-bg:#ffffff;
+      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      --transition-speed: 0.3s;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(800px 400px at 10% 10%, #e0f2fe 0%, transparent 60%),
+        radial-gradient(700px 350px at 90% 20%, #bae6fd 0%, transparent 60%),
+        linear-gradient(180deg, #f0f9ff 0%, #ffffff 40%, #f8fafc 100%);
+      color:var(--ink);
+      padding:0;
+      margin:0;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .dashboard{
+      padding: 16px;
+      padding-bottom: 80px; /* Space for bottom nav */
+      max-width:500px;
+      margin:0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .card{
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius:16px;
+      padding:20px;
+      box-shadow: var(--glass-shadow);
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .filters {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none; /* Firefox */
+    }
+    
+    .filter-row::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
+    }
+    
+    .filter-chip {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .filter-chip.active {
+      background: var(--brand-600);
+      color: white;
+      border-color: var(--brand-600);
+    }
+    
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--brand-600);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    }
+    
+    .jobs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .job-card{
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .job-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    
+    .job-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .job-title{
+      font-weight:700;
+      font-size:18px;
+      color: var(--ink);
+      margin: 0;
+    }
+    
+    .job-price {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--brand-success);
+    }
+    
+    .job-details{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size:14px;
+      color:#64748b;
+    }
+    
+    .job-detail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .job-detail i {
+      width: 20px;
+      color: var(--brand-600);
+    }
+    
+    .job-description {
+      color: #334155;
+      line-height: 1.5;
+      margin: 8px 0;
+      display: -webkit-box;
+      -webkit-line-2amp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .job-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .job-tag {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .job-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+    
+    .job-posted {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    
+    .actions{
+      display:flex;
+      gap:12px;
+    }
+    
+    .btn{
+      padding:12px 20px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      transition: all 0.3s ease;
+      color:white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 16px rgba(0,0,0,0.15);
+    }
+    
+    .accept{
+      background:var(--brand-success);
+    }
+    
+    .accept:hover{
+      background:#15803d;
+      box-shadow:0 6px 16px rgba(22, 163, 74, 0.4);
+    }
+    
+    .reject{
+      background:var(--brand-danger);
+    }
+    
+    .reject:hover{
+      background:#b91c1c;
+      box-shadow:0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+    
+    .back-btn{
+      background:var(--brand-600);
+      padding: 12px 24px;
+    }
+    
+    .back-btn:hover{
+      background:var(--brand-700);
+      box-shadow:0 6px 16px rgba(14, 165, 233, 0.4);
+    }
+    
+    .no-jobs {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+    
+    .no-jobs i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+    
+    no-jobs p {
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    /* Modal */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal-content{
+      background:var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      padding:24px;
+      border-radius:20px;
+      width: 90%;
+      max-width:400px;
+      text-align:center;
+      animation:bounceIn 0.45s ease;
+      box-shadow: var(--glass-shadow);
+    }
+    
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      60% { opacity: 1; transform: scale(1.05); }
+      80% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    
+    .modal-header {
+      margin-bottom: 20px;
+    }
+    
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .modal-icon.accept {
+      color: var(--brand-success);
+    }
+    
+    .modal-icon.reject {
+      color: var(--brand-danger);
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      margin: 0 0 8px 0;
+    }
+    
+    .modal-message {
+      color: #64748b;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    
+    .modal-job-details {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    
+    .modal-job-detail {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .modal-job-detail:last-child {
+      margin-bottom: 0;
+    }
+    
+    .modal-job-detail .label {
+      color: #64748b;
+    }
+    
+    .modal-job-detail .value {
+      font-weight: 600;
+    }
+    
+    .modal-actions{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+    }
+    
+    .modal-btn{
+      padding:12px 24px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .modal-btn.confirm{
+      background:var(--brand-success);
+      color:white;
+    }
+    
+    .modal-btn.confirm:hover {
+      background:#15803d;
+      transform: translateY(-2px);
+      box-shadow:0 6px 16px rgba(22, 163, 74, 0.4);
+    }
+    
+    .modal-btn.cancel{
+      background:var(--brand-600);
+      color:white;
+    }
+    
+    .modal-btn.cancel:hover {
+      background:var(--brand-700);
+      transform: translateY(-2px);
+      box-shadow:0 6px 16px rgba(14, 165, 233, 0.4);
+    }
+    
+    .modal-btn.reject{
+      background:var(--brand-danger);
+      color:white;
+    }
+    
+    .modal-btn.reject:hover {
+      background:#b91c1c;
+      transform: translateY(-2px);
+      box-shadow:0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px;
+      z-index: 100;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #64748b;
+      font-size: 11px;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item.active {
+      color: var(--brand-600);
+    }
+    
+    .nav-item i {
+      font-size: 20px;
+    }
+    
+    /* Filter modal */
+    .filter-modal {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    
+    .filter-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .filter-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .filter-option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .filter-option-group label {
+      font-weight: 600;
+      color: #334155;
+      font-size: 14px;
+    }
+    
+    .filter-select {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 14px;
+    }
+    
+    .filter-modal-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .filter-modal-btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    .filter-modal-btn.apply {
+      background: var(--brand-600);
+      color: white;
+    }
+    
+    .filter-modal-btn.reset {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--brand-success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideUpToast 0.3s ease;
+    }
+    
+    .toast.error {
+      background: var(--brand-danger);
+    }
+    
+    @keyframes slideUpToast {
+      from { bottom: 70px; opacity: 0; }
+      to { bottom: 100px; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <button class="back-btn" onclick="window.location.href='W-dashboard.html'" style="background: none; border: none; font-size: 20px; color: var(--ink);">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <h1 style="font-size: 20px;">Available Jobs</h1>
+    <div style="width: 20px;"></div> <!-- Spacer for symmetry -->
+  </div>
+
+  <div class="dashboard">
+    <!-- Filters -->
+    <div class="card filters">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search jobs...">
+      </div>
+      
+      <div class="filter-row">
+        <div class="filter-chip active" data-filter="all">All</div>
+        <div class="filter-chip" data-filter="electrical">Electrical</div>
+        <div class="filter-chip" data-filter="plumbing">Plumbing</div>
+        <div class="filter-chip" data-filter="carpentry">Carpentry</div>
+        <div class="filter-chip" data-filter="cleaning">Cleaning</div>
+        <div class="filter-chip" onclick="openFilterModal()">
+          <i class="fas fa-sliders-h"></i> More
+        </div>
+      </div>
+    </div>
+
+    <div class="jobs-container" id="jobsContainer">
+      <!-- Job cards will be populated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="filter-modal" id="filterModal">
+    <div class="filter-modal-header">
+      <h2>Filters</h2>
+      <button style="background: none; border: none; font-size: 20px;" onclick="closeFilterModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="filter-options">
+      <div class="filter-option-group">
+        <label for="locationFilter">Location</label>
+        <select id="locationFilter" class="filter-select">
+          <option value="all">All Locations</option>
+          <option value="mangalore">Mangalore</option>
+          <option value="udupi">Udupi</option>
+          <option value="banglore">Bangalore</option>
+        </select>
+      </div>
+      
+      <div class="filter-option-group">
+        <label for="sortBy">Sort By</label>
+        <select id="sortBy" class="filter-select">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="price-low">Price: Low to High</option>
+        </select>
+      </div>
+      
+      <div class="filter-option-group">
+        <label for="urgencyFilter">Urgency</label>
+        <select id="urgencyFilter" class="filter-select">
+          <option value="all">Any Urgency</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="filter-modal-actions">
+      <button class="filter-modal-btn reset" onclick="resetFilters()">Reset</button>
+      <button class="filter-modal-btn apply" onclick="applyFiltersFromModal()">Apply</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="W-view-jobs.html" class="nav-item active">
+      <i class="fas fa-briefcase"></i>
+      <span>Jobs</span>
+    </a>
+    <a href="W-job-history.html" class="nav-item">
+      <i class="fas fa-history"></i>
+      <span>History</span>
+    </a>
+    <a href="W-dashboard.html" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="W-withdraw.html" class="nav-item">
+      <i class="fas fa-money-bill-wave"></i>
+      <span>Withdraw</span>
+    </a>
+    <a href="W-settings.html" class="nav-item">
+      <i class="fas fa-cog"></i>
+      <span>Settings</span>
+    </a>
+  </div>
+
+  <!-- Job Action Modal -->
+  <div id="actionModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon">
+          <i class="fas fa-question-circle"></i>
+        </div>
+        <h3 class="modal-title" id="modalTitle">Confirm Action</h3>
+        <p class="modal-message" id="modalMessage">Are you sure you want to perform this action?</p>
+      </div>
+      
+      <div class="modal-job-details" id="modalJobDetails">
+        <!-- Job details will be populated by JavaScript -->
+      </div>
+      
+      <div class="modal-actions">
+        <button id="confirmAction" class="modal-btn confirm">
+          <i class="fas fa-check"></i> Confirm
+        </button>
+        <button id="cancelAction" class="modal-btn cancel">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Detail Modal -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px; text-align: left;">
+      <div class="modal-header" style="text-align: center;">
+        <h3 class="modal-title" id="detailTitle">Job Details</h3>
+      </div>
+      
+      <div id="detailContent">
+        <!-- Job details will be populated by JavaScript -->
+      </div>
+      
+      <div class="modal-actions">
+        <button id="closeDetail" class="modal-btn cancel">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <button id="acceptFromDetail" class="modal-btn confirm">
+          <i class="fas fa-check"></i> Accept Job
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced View Jobs functionality for mobile
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load jobs from sessionStorage or create defaults
+      let jobs = JSON.parse(sessionStorage.getItem("jobs")) || [
+        {
+          id: 1, 
+          title: "Fix kitchen wiring", 
+          location: "Mangalore", 
+          pay: 500, 
+          status: "pending",
+          category: "electrical",
+          description: "Need to fix kitchen wiring that's causing frequent short circuits. All materials will be provided.",
+          client: "Rahul Sharma",
+          posted: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+          duration: "2-3 hours",
+          urgency: "high",
+          tags: ["wiring", "kitchen", "electrical"]
+        },
+        {
+          id: 2, 
+          title: "Install ceiling fan", 
+          location: "Udupi", 
+          pay: 400, 
+          status: "pending",
+          category: "electrical",
+          description: "Need to install a new ceiling fan in living room. Existing wiring is in place.",
+          client: "Priya Patel",
+          posted: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+          duration: "1-2 hours",
+          urgency: "medium",
+          tags: ["fan installation", "ceiling", "electrical"]
+        },
+        {
+          id: 3, 
+          title: "Repair water heater", 
+          location: "Mangalore", 
+          pay: 600, 
+          status: "pending",
+          category: "plumbing",
+          description: "Water heater not heating properly. Needs diagnosis and repair.",
+          client: "Vikram Malhotra",
+          posted: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+          duration: "2-3 hours",
+          urgency: "high",
+          tags: ["water heater", "repair", "plumbing"]
+        },
+        {
+          id: 4, 
+          title: "Fix leaking pipe", 
+          location: "Bangalore", 
+          pay: 350, 
+          status: "pending",
+          category: "plumbing",
+          description: "Kitchen sink pipe is leaking and needs to be fixed or replaced.",
+          client: "Ananya Reddy",
+          posted: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+          duration: "1-2 hours",
+          urgency: "medium",
+          tags: ["pipe repair", "leak", "plumbing"]
+        },
+        {
+          id: 5, 
+          title: "Assemble furniture", 
+          location: "Mangalore", 
+          pay: 450, 
+          status: "pending",
+          category: "carpentry",
+          description: "Need help assembling IKEA furniture (bed frame and wardrobe).",
+          client: "Nitin Desai",
+          posted: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+          duration: "3-4 hours",
+          urgency: "low",
+          tags: ["furniture assembly", "carpentry"]
+        }
+      ];
+      sessionStorage.setItem("jobs", JSON.stringify(jobs));
+      
+      // DOM Elements
+      const jobsContainer = document.getElementById("jobsContainer");
+      const actionModal = document.getElementById("actionModal");
+      const detailModal = document.getElementById("detailModal");
+      const searchInput = document.getElementById("searchInput");
+      const filterModal = document.getElementById("filterModal");
+      
+      // State variables
+      let selectedJob = null;
+      let selectedAction = null;
+      let filteredJobs = [];
+      let currentCategory = "all";
+      let currentLocation = "all";
+      let currentSort = "newest";
+      let currentUrgency = "all";
+      
+      // Initialize the page
+      function init() {
+        filteredJobs = [...jobs.filter(job => job.status === "pending")];
+        renderJobs();
+        setupEventListeners();
+      }
+      
+      // Set up event listeners
+      function setupEventListeners() {
+        // Search input listener
+        searchInput.addEventListener('input', applyFilters);
+        
+        // Filter chip listeners
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+          chip.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            if (filter) {
+              document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+              this.classList.add('active');
+              currentCategory = filter;
+              applyFilters();
+            }
+          });
+        });
+        
+        // Modal event listeners
+        document.getElementById('cancelAction').addEventListener('click', closeModal);
+        document.getElementById('confirmAction').addEventListener('click', confirmAction);
+        document.getElementById('closeDetail').addEventListener('click', closeDetailModal);
+        document.getElementById('acceptFromDetail').addEventListener('click', acceptFromDetail);
+      }
+      
+      // Apply all filters and render jobs
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        // Filter jobs
+        filteredJobs = jobs.filter(job => {
+          if (job.status !== "pending") return false;
+          if (currentCategory !== "all" && job.category !== currentCategory) return false;
+          if (currentLocation !== "all" && job.location.toLowerCase() !== currentLocation) return false;
+          if (currentUrgency !== "all" && job.urgency !== currentUrgency) return false;
+          if (searchTerm && !(
+            job.title.toLowerCase().includes(searchTerm) ||
+            job.description.toLowerCase().includes(searchTerm) ||
+            job.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+          )) return false;
+          
+          return true;
+        });
+        
+        // Sort jobs
+        switch(currentSort) {
+          case 'newest':
+            filteredJobs.sort((a, b) => new Date(b.posted) - new Date(a.posted));
+            break;
+          case 'oldest':
+            filteredJobs.sort((a, b) => new Date(a.posted) - new Date(b.posted));
+            break;
+          case 'price-high':
+            filteredJobs.sort((a, b) => b.pay - a.pay);
+            break;
+          case 'price-low':
+            filteredJobs.sort((a, b) => a.pay - b.pay);
+            break;
+        }
+        
+        renderJobs();
+      }
+      
+      // Render jobs
+      function renderJobs() {
+        jobsContainer.innerHTML = '';
+        
+        if (filteredJobs.length === 0) {
+          jobsContainer.innerHTML = `
+            <div class="no-jobs">
+              <i class="fas fa-search"></i>
+              <p>No jobs found matching your criteria</p>
+            </div>
+          `;
+          return;
+        }
+        
+        filteredJobs.forEach(job => {
+          const jobCard = document.createElement('div');
+          jobCard.className = 'job-card';
+          
+          const postedDate = new Date(job.posted);
+          const timeAgo = getTimeAgo(postedDate);
+          
+          jobCard.innerHTML = `
+            <div class="job-card-header">
+              <h3 class="job-title">${job.title}</h3>
+              <div class="job-price">₹${job.pay}</div>
+            </div>
+            
+            <div class="job-details">
+              <div class="job-detail">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${job.location}</span>
+              </div>
+              <div class="job-detail">
+                <i class="fas fa-clock"></i>
+                <span>${job.duration}</span>
+              </div>
+              <div class="job-detail">
+                <i class="fas fa-bolt"></i>
+                <span>${job.urgency.charAt(0).toUpperCase() + job.urgency.slice(1)} urgency</span>
+              </div>
+              <div class="job-detail">
+                <i class="fas fa-user"></i>
+                <span>${job.client}</span>
+              </div>
+            </div>
+            
+            <p class="job-description">${job.description}</p>
+            
+            <div class="job-tags">
+              ${job.tags.map(tag => `<span class="job-tag">${tag}</span>`).join('')}
+            </div>
+            
+            <div class="job-card-footer">
+              <div class="job-posted">Posted ${timeAgo}</div>
+              <div class="actions">
+                <button class="btn reject" onclick="openModal(${job.id}, 'reject')">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+                <button class="btn accept" onclick="openModal(${job.id}, 'accept')">
+                  <i class="fas fa-check"></i> Accept
+                </button>
+                <button class="btn" style="background: var(--brand-600);" onclick="viewJobDetails(${job.id})">
+                  <i class="fas fa-eye"></i> Details
+                </button>
+              </div>
+            </div>
+          `;
+          
+          jobsContainer.appendChild(jobCard);
+        });
+      }
+      
+      // Open filter modal
+      window.openFilterModal = function() {
+        filterModal.style.display = 'block';
+      }
+      
+      // Close filter modal
+      window.closeFilterModal = function() {
+        filterModal.style.display = 'none';
+      }
+      
+      // Apply filters from modal
+      window.applyFiltersFromModal = function() {
+        currentLocation = document.getElementById('locationFilter').value;
+        currentSort = document.getElementById('sortBy').value;
+        currentUrgency = document.getElementById('urgencyFilter').value;
+        applyFilters();
+        closeFilterModal();
+      }
+      
+      // Reset filters
+      window.resetFilters = function() {
+        document.getElementById('locationFilter').value = 'all';
+        document.getElementById('sortBy').value = 'newest';
+        document.getElementById('urgencyFilter').value = 'all';
+      }
+      
+      // Open action modal
+      window.openModal = function(jobId, action) {
+        selectedJob = jobs.find(j => j.id === jobId);
+        selectedAction = action;
+        
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalJobDetails = document.getElementById('modalJobDetails');
+        const confirmBtn = document.getElementById('confirmAction');
+        
+        if (action === 'accept') {
+          modalIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+          modalIcon.className = 'modal-icon accept';
+          modalTitle.textContent = 'Accept Job';
+          modalMessage.textContent = `Are you sure you want to accept this job?`;
+          confirmBtn.className = 'modal-btn confirm';
+          confirmBtn.innerHTML = '<i class="fas fa-check"></i> Accept Job';
+        } else {
+          modalIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+          modalIcon.className = 'modal-icon reject';
+          modalTitle.textContent = 'Reject Job';
+          modalMessage.textContent = `Are you sure you want to reject this job?`;
+          confirmBtn.className = 'modal-btn reject';
+          confirmBtn.innerHTML = '<i class="fas fa-times"></i> Reject Job';
+        }
+        
+        modalJobDetails.innerHTML = `
+          <div class="modal-job-detail">
+            <span class="label">Job:</span>
+            <span class="value">${selectedJob.title}</span>
+          </div>
+          <div class="modal-job-detail">
+            <span class="label">Location:</span>
+            <span class="value">${selectedJob.location}</span>
+          </div>
+          <div class="modal-job-detail">
+            <span class="label">Pay:</span>
+            <span class="value">₹${selectedJob.pay}</span>
+          </div>
+        `;
+        
+        actionModal.style.display = 'flex';
+      };
+      
+      // Close modal
+      function closeModal() {
+        actionModal.style.display = 'none';
+        selectedJob = null;
+        selectedAction = null;
+      }
+      
+      // Confirm action
+      function confirmAction() {
+        if (selectedJob && selectedAction) {
+          if (selectedAction === 'accept') {
+            selectedJob.status = 'accepted';
+            
+            // Add notification to sessionStorage for dashboard
+            addNotificationToStorage(`✅ Accepted job: ${selectedJob.title}`, 'success');
+            
+            // Show confirmation toast
+            showToast('Job accepted successfully!');
+          } else {
+            selectedJob.status = 'rejected';
+            
+            // Add notification to sessionStorage for dashboard
+            addNotificationToStorage(`❌ Rejected job: ${selectedJob.title}`, 'danger');
+            
+            // Show confirmation toast
+            showToast('Job rejected.', 'error');
+          }
+          
+          sessionStorage.setItem('jobs', JSON.stringify(jobs));
+          applyFilters(); // Refresh the job list
+        }
+        
+        closeModal();
+      }
+      
+      // Add notification to sessionStorage for dashboard
+      function addNotificationToStorage(message, type = 'info') {
+        // Get existing notifications or initialize empty array
+        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        
+        // Add new notification
+        notifications.unshift({
+          message,
+          type,
+          time: Date.now()
+        });
+        
+        // Save back to sessionStorage
+        sessionStorage.setItem('notifications', JSON.stringify(notifications));
+      }
+      
+      // Show toast notification
+      function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+        toast.innerHTML = `
+          <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+          <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      }
+      
+      // View job details
+      window.viewJobDetails = function(jobId) {
+        const job = jobs.find(j => j.id === jobId);
+        const detailTitle = document.getElementById('detailTitle');
+        const detailContent = document.getElementById('detailContent');
+        
+        detailTitle.textContent = job.title;
+        
+        const postedDate = new Date(job.posted);
+        const formattedDate = postedDate.toLocaleDateString('en-IN', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        
+        detailContent.innerHTML = `
+          <div class="modal-job-details">
+            <div class="modal-job-detail">
+              <span class="label">Client:</span>
+              <span class="value">${job.client}</span>
+            </div>
+            <div class="modal-job-detail">
+              <span class="label">Location:</span>
+              <span class="value">${job.location}</span>
+            </div>
+            <div class="modal-job-detail">
+              <span class="label">Pay:</span>
+              <span class="value">₹${job.pay}</span>
+            </div>
+            <div class="modal-job-detail">
+              <span class="label">Duration:</span>
+              <span class="value">${job.duration}</span>
+            </div>
+            <div class="modal-job-detail">
+              <span class="label">Urgency:</span>
+              <span class="value">${job.urgency.charAt(0).toUpperCase() + job.urgency.slice(1)}</span>
+            </div>
+            <div class="modal-job-detail">
+              <span class="label">Posted:</span>
+              <span class="value">${formattedDate}</span>
+            </div>
+          </div>
+          
+          <h4>Job Description</h4>
+          <p>${job.description}</p>
+          
+          <h4>Required Skills</h4>
+          <div class="job-tags">
+            ${job.tags.map(tag => `<span class="job-tag">${tag}</span>`).join('')}
+          </div>
+        `;
+        
+        // Set up the accept button to work with this job
+        const acceptBtn = document.getElementById('acceptFromDetail');
+        acceptBtn.onclick = function() {
+          openModal(jobId, 'accept');
+          closeDetailModal();
+        };
+        
+        detailModal.style.display = 'flex';
+      };
+      
+      // Close detail modal
+      function closeDetailModal() {
+        detailModal.style.display = 'none';
+      }
+      
+      // Accept job from detail modal
+      function acceptFromDetail() {
+        if (selectedJob) {
+          openModal(selectedJob.id, 'accept');
+          closeDetailModal();
+        }
+      }
+      
+      // Get time ago string
+      function getTimeAgo(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins} minutes ago`;
+        if (diffHours < 24) return `${diffHours} hours ago`;
+        if (diffDays === 1) return 'yesterday';
+        return `${diffDays} days ago`;
+      }
+      
+      // Initialize the page
+      init();
+    });
+  </script>
+</body>
+</html>

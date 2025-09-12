@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hirewale — Worker Registration (Step 2)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-600: #0ea5e9;
+      --brand-700: #0284c7;
+      --brand-500: #38bdf8;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --muted-light: #94a3b8;
+      --bg: #f8fafc;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --border: #e2e8f0;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --glass-bg: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-shadow: 0 8px 32px rgba(2, 132, 199, 0.1);
+      --transition: all 0.3s ease;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100svh;
+      color: var(--ink);
+      background: radial-gradient(800px 400px at 10% 10%, #e0f2fe 0%, transparent 60%),
+                  radial-gradient(700px 350px at 90% 20%, #bae6fd 0%, transparent 60%),
+                  linear-gradient(180deg, #f0f9ff 0%, #ffffff 40%, #f8fafc 100%);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 10px;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .tag {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+      height: 8px;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 25%;
+      background: linear-gradient(90deg, var(--brand-500), var(--brand-700));
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--glass-shadow);
+      padding: 24px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .field:focus-within {
+      border-color: var(--brand-500);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    .field i {
+      color: var(--muted);
+      font-size: 18px;
+      transition: var(--transition);
+    }
+
+    .field:focus-within i {
+      color: var(--brand-600);
+    }
+
+    .field input, .field select, .field textarea {
+      flex: 1;
+      font: inherit;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 16px;
+      min-width: 0;
+    }
+
+    .field input::placeholder, .field textarea::placeholder {
+      color: var(--muted-light);
+    }
+
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      margin-top: 4px;
+      z-index: 10;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .search-suggestions.visible {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f1f5f9;
+    }
+
+    .suggestion-item i {
+      color: var(--brand-600);
+      font-size: 16px;
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .service-card {
+      background: var(--glass-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .service-card:active {
+      transform: scale(0.98);
+    }
+
+    .service-card.selected {
+      border-color: var(--brand-600);
+      background: rgba(14, 165, 233, 0.1);
+      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.2);
+    }
+
+    .service-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: var(--brand-600);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .service-card i {
+      font-size: 32px;
+      color: var(--brand-600);
+      background: rgba(14, 165, 233, 0.1);
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .service-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .service-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      border: 0;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      font-size: 16px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+      transition: left 0.7s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .btn-secondary:active {
+      background: #e2e8f0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary:disabled::before {
+      display: none;
+    }
+
+    .custom-service-container {
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-top: 16px;
+      border-left: 4px solid var(--brand-500);
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .custom-service-container.show {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+
+    .custom-service-header {
+      font-weight: 600;
+      margin-bottom: 0;
+      color: var(--brand-700);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      grid-column: 1 / -1;
+    }
+
+    .service-categories {
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .service-categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-btn {
+      padding: 10px 16px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .category-btn:active, .category-btn.active {
+      background: var(--brand-600);
+      color: white;
+      border-color: var(--brand-600);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+
+    .loading-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--brand-500);
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--ink);
+      color: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+   
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Responsive adjustments for larger mobile devices */
+    @media (min-width: 400px) {
+      .service-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 480px) {
+      body {
+        padding: 20px;
+      }
+      
+      .shell {
+        padding: 0;
+      }
+    }
+
+    /* Prevent zoom on input focus for mobile */
+    @media (max-width: 480px) {
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">Hirewale</div>
+      <div class="tag">Step 2 of 8 — Service Selection</div>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+
+    <section class="card">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+      </div>
+
+      <form id="serviceForm">
+        <!-- Service Search -->
+        <div class="form-group">
+          <label for="serviceSearch">
+            <i class="fas fa-search"></i>
+            Search Service
+          </label>
+          <div class="field">
+            <i class="fas fa-search"></i>
+            <input type="text" id="serviceSearch" placeholder="Search services...">
+            <div class="search-suggestions" id="searchSuggestions"></div>
+          </div>
+        </div>
+
+        <!-- Service Categories -->
+        <div class="form-group">
+          <label>
+            <i class="fas fa-tags"></i>
+            Browse Categories
+          </label>
+          <div class="service-categories">
+            <button type="button" class="category-btn active" data-category="all">All</button>
+            <button type="button" class="category-btn" data-category="home">Home</button>
+            <button type="button" class="category-btn" data-category="tech">Tech</button>
+            <button type="button" class="category-btn" data-category="education">Education</button>
+            <button type="button" class="category-btn" data-category="beauty">Beauty</button>
+            <button type="button" class="category-btn" data-category="other">Other</button>
+          </div>
+        </div>
+
+        <!-- Service Selection Grid -->
+        <div class="form-group" style="flex: 1;">
+          <label>
+            <i class="fas fa-briefcase"></i>
+            Select Your Service
+            <span class="help">(Choose one that matches your skills)</span>
+          </label>
+          <div class="service-grid" id="serviceGrid">
+            <!-- Services will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Custom Service Option -->
+        <div class="form-group">
+          <label>
+            <i class="fas fa-lightbulb"></i>
+            Don't see your service?
+          </label>
+          <button type="button" id="customServiceToggle" class="btn-secondary">
+            <i class="fas fa-plus"></i> Request Custom Service
+          </button>
+          
+          <div class="custom-service-container" id="customServiceContainer">
+            <div class="custom-service-header">
+              <i class="fas fa-lightbulb"></i>
+              Request a New Service
+            </div>
+            <div class="field">
+              <i class="fas fa-pen"></i>
+              <input type="text" id="customService" placeholder="Service name">
+            </div>
+            <div class="field" style="align-items: flex-start;">
+              <i class="fas fa-align-left" style="margin-top: 12px;"></i>
+              <textarea id="serviceDescription" placeholder="Describe this service..." rows="3" style="flex: 1; border: none; outline: none; resize: vertical; font-family: inherit; font-size: 16px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" id="prevBtn">
+            <i class="fas fa-arrow-left"></i> Previous
+          </button>
+          <button type="submit" id="nextBtn" class="btn btn-primary" disabled>
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  
+
+  <script>
+    // Enhanced service data with more details
+    const services = [
+      { id: 1, name: 'Plumber', category: 'home', icon: 'fa-faucet', description: 'Fix leaks, installations, and plumbing repairs', popularity: 95 },
+      { id: 2, name: 'Electrician', category: 'home', icon: 'fa-bolt', description: 'Wiring, repairs, and electrical installations', popularity: 92 },
+      { id: 3, name: 'Driver', category: 'other', icon: 'fa-car', description: 'Personal and commercial driving services', popularity: 88 },
+      { id: 4, name: 'Carpenter', category: 'home', icon: 'fa-hammer', description: 'Furniture making, repairs, and woodworking', popularity: 85 },
+      { id: 5, name: 'Tutor', category: 'education', icon: 'fa-graduation-cap', description: 'Academic tutoring and subject teaching', popularity: 90 },
+      { id: 6, name: 'Beautician', category: 'beauty', icon: 'fa-spa', description: 'Hair, makeup, and beauty services', popularity: 87 },
+      { id: 7, name: 'AC Technician', category: 'tech', icon: 'fa-fan', description: 'AC installation, repair, and maintenance', popularity: 89 },
+      { id: 8, name: 'Painter', category: 'home', icon: 'fa-paint-roller', description: 'Wall painting and decorative work', popularity: 84 },
+      { id: 9, name: 'Mechanic', category: 'tech', icon: 'fa-tools', description: 'Vehicle repair and maintenance', popularity: 91 },
+      { id: 10, name: 'Cook', category: 'home', icon: 'fa-utensils', description: 'Home chef and cooking services', popularity: 86 },
+      { id: 11, name: 'Yoga Instructor', category: 'beauty', icon: 'fa-spa', description: 'Yoga and meditation classes', popularity: 82 },
+      { id: 12, name: 'IT Support', category: 'tech', icon: 'fa-laptop', description: 'Computer repair and IT services', popularity: 93 }
+    ];
+
+    class ServiceRegistration {
+      constructor() {
+        this.selectedService = null;
+        this.currentCategory = 'all';
+        this.currentSearchTerm = '';
+        this.debounceTimer = null;
+        
+        // DOM Elements
+        this.serviceGrid = document.getElementById('serviceGrid');
+        this.serviceSearch = document.getElementById('serviceSearch');
+        this.searchSuggestions = document.getElementById('searchSuggestions');
+        this.categoryButtons = document.querySelectorAll('.category-btn');
+        this.customServiceToggle = document.getElementById('customServiceToggle');
+        this.customServiceContainer = document.getElementById('customServiceContainer');
+        this.customServiceInput = document.getElementById('customService');
+        this.serviceDescription = document.getElementById('serviceDescription');
+        this.nextBtn = document.getElementById('nextBtn');
+        this.prevBtn = document.getElementById('prevBtn');
+        this.serviceForm = document.getElementById('serviceForm');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.toast = document.getElementById('toast');
+        
+        this.init();
+      }
+      
+      init() {
+        this.renderServices();
+        this.setupEventListeners();
+        this.loadSavedData();
+      }
+      
+      setupEventListeners() {
+        // Search with debouncing
+        this.serviceSearch.addEventListener('input', (e) => {
+          this.currentSearchTerm = e.target.value;
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = setTimeout(() => {
+            this.renderServices();
+            this.showSearchSuggestions();
+          }, 300);
+        });
+        
+        this.serviceSearch.addEventListener('focus', () => {
+          this.showSearchSuggestions();
+        });
+        
+        document.addEventListener('click', (e) => {
+          if (!this.searchSuggestions.contains(e.target) && e.target !== this.serviceSearch) {
+            this.searchSuggestions.classList.remove('visible');
+          }
+        });
+        
+        // Category filtering
+        this.categoryButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            this.categoryButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            this.currentCategory = button.dataset.category;
+            this.renderServices();
+            
+            // Close keyboard if open
+            this.serviceSearch.blur();
+          });
+        });
+        
+        // Custom service toggle
+        this.customServiceToggle.addEventListener('click', () => {
+          this.customServiceContainer.classList.toggle('show');
+          if (this.customServiceContainer.classList.contains('show')) {
+            this.deselectAllServices();
+            this.selectedService = null;
+          }
+          this.updateNextButtonState();
+        });
+        
+        // Custom service input
+        this.customServiceInput.addEventListener('input', () => this.updateNextButtonState());
+        this.serviceDescription.addEventListener('input', () => this.updateNextButtonState());
+        
+        // Form submission
+        this.serviceForm.addEventListener('submit', (e) => this.handleSubmit(e));
+        
+        // Previous button
+        this.prevBtn.addEventListener('click', () => {
+          window.location.href = 'employee.html';
+        });
+        
+        // Handle touch events for better mobile performance
+        this.preventScrollJump();
+      }
+      
+      preventScrollJump() {
+        // Prevent scroll jump when inputs are focused on mobile
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+          input.addEventListener('focus', () => {
+            window.scrollTo(0, window.scrollY);
+          });
+        });
+      }
+      
+      renderServices() {
+        this.serviceGrid.innerHTML = '';
+        
+        const filteredServices = this.getFilteredServices();
+        
+        if (filteredServices.length === 0) {
+          this.serviceGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px;">
+              <i class="fas fa-search" style="font-size: 48px; color: var(--muted-light); margin-bottom: 16px;"></i>
+              <h3 style="color: var(--muted); margin-bottom: 8px;">No services found</h3>
+              <p style="color: var(--muted-light);">Try a different search term or category</p>
+            </div>
+          `;
+          return;
+        }
+        
+        filteredServices.forEach(service => {
+          const serviceCard = document.createElement('div');
+          serviceCard.className = 'service-card';
+          serviceCard.dataset.id = service.id;
+          serviceCard.innerHTML = `
+            <i class="fas ${service.icon}"></i>
+            <h3>${service.name}</h3>
+            <p>${service.description}</p>
+          `;
+          
+          serviceCard.addEventListener('click', () => {
+            this.selectService(service);
+          });
+          
+          this.serviceGrid.appendChild(serviceCard);
+        });
+        
+        // If a service was previously selected, reselect it
+        if (this.selectedService) {
+          const cardToSelect = document.querySelector(`.service-card[data-id="${this.selectedService.id}"]`);
+          if (cardToSelect) {
+            cardToSelect.classList.add('selected');
+          }
+        }
+      }
+      
+      getFilteredServices() {
+        return services.filter(service => {
+          const matchesCategory = this.currentCategory === 'all' || service.category === this.currentCategory;
+          const matchesSearch = service.name.toLowerCase().includes(this.currentSearchTerm.toLowerCase()) ||
+                              service.description.toLowerCase().includes(this.currentSearchTerm.toLowerCase());
+          return matchesCategory && matchesSearch;
+        }).sort((a, b) => b.popularity - a.popularity); // Sort by popularity
+      }
+      
+      showSearchSuggestions() {
+        if (!this.currentSearchTerm) {
+          this.searchSuggestions.classList.remove('visible');
+          return;
+        }
+        
+        const matchingServices = services.filter(service => 
+          service.name.toLowerCase().includes(this.currentSearchTerm.toLowerCase()) ||
+          service.description.toLowerCase().includes(this.currentSearchTerm.toLowerCase())
+        ).slice(0, 5);
+        
+        if (matchingServices.length === 0) {
+          this.searchSuggestions.innerHTML = `
+            <div class="suggestion-item">
+              <i class="fas fa-search"></i>
+              <span>No results found for "${this.currentSearchTerm}"</span>
+            </div>
+          `;
+        } else {
+          this.searchSuggestions.innerHTML = matchingServices.map(service => `
+            <div class="suggestion-item" data-id="${service.id}">
+              <i class="fas ${service.icon}"></i>
+              <span>${service.name}</span>
+            </div>
+          `).join('');
+          
+          // Add event listeners to suggestion items
+          this.searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const serviceId = parseInt(item.dataset.id);
+              const service = services.find(s => s.id === serviceId);
+              if (service) {
+                this.selectService(service);
+                this.serviceSearch.value = service.name;
+                this.currentSearchTerm = service.name;
+                this.searchSuggestions.classList.remove('visible');
+                this.renderServices();
+                
+                // Close keyboard
+                this.serviceSearch.blur();
+              }
+            });
+          });
+        }
+        
+        this.searchSuggestions.classList.add('visible');
+      }
+      
+      selectService(service) {
+        this.deselectAllServices();
+        
+        const selectedCard = document.querySelector(`.service-card[data-id="${service.id}"]`);
+        if (selectedCard) {
+          selectedCard.classList.add('selected');
+        }
+        
+        this.selectedService = service;
+        this.customServiceInput.value = '';
+        this.customServiceContainer.classList.remove('show');
+        this.updateNextButtonState();
+        
+        // Show selection feedback
+        this.showToast(`Selected: ${service.name}`, 'success');
+      }
+      
+      deselectAllServices() {
+        document.querySelectorAll('.service-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+      }
+      
+      updateNextButtonState() {
+        this.nextBtn.disabled = !(this.selectedService || this.customServiceInput.value.trim());
+      }
+      
+      async handleSubmit(e) {
+        e.preventDefault();
+        
+        let serviceData;
+        if (this.selectedService) {
+          serviceData = {
+            id: this.selectedService.id,
+            name: this.selectedService.name,
+            type: 'standard'
+          };
+        } else if (this.customServiceInput.value.trim()) {
+          serviceData = {
+            id: null,
+            name: this.customServiceInput.value.trim(),
+            description: this.serviceDescription.value.trim(),
+            type: 'custom'
+          };
+        } else {
+          this.showToast('Please select or specify a service.', 'error');
+          return;
+        }
+        
+        // Save to sessionStorage
+        const workerData = JSON.parse(sessionStorage.getItem('hirewale_worker_step1') || '{}');
+        workerData.service = serviceData;
+        sessionStorage.setItem('hirewale_worker_step2', JSON.stringify(workerData));
+        
+        // Show loading state
+        this.showLoading(true);
+        this.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        this.nextBtn.disabled = true;
+        
+        // Simulate API call delay
+        setTimeout(() => {
+          this.showLoading(false);
+          window.location.href = 'WRS-3.html';
+        }, 1500);
+      }
+      
+      loadSavedData() {
+        try {
+          const savedData = JSON.parse(sessionStorage.getItem('hirewale_worker_step2') || '{}');
+          if (savedData.service) {
+            if (savedData.service.type === 'standard') {
+              const serviceToSelect = services.find(s => s.id === savedData.service.id);
+              if (serviceToSelect) {
+                this.selectService(serviceToSelect);
+              }
+            } else {
+              this.customServiceInput.value = savedData.service.name;
+              this.serviceDescription.value = savedData.service.description || '';
+              this.customServiceContainer.classList.add('show');
+              this.updateNextButtonState();
+            }
+          }
+        } catch (error) {
+          console.error('Error loading saved data:', error);
+        }
+      }
+      
+      showLoading(show) {
+        if (show) {
+          this.loadingOverlay.classList.add('visible');
+        } else {
+          this.loadingOverlay.classList.remove('visible');
+        }
+      }
+      
+      showToast(message, type = 'default') {
+        this.toast.textContent = message;
+        this.toast.className = `toast ${type}`;
+        this.toast.classList.add('visible');
+        
+        setTimeout(() => {
+          this.toast.classList.remove('visible');
+        }, 3000);
+      }
+    }
+    
+    // Initialize the application when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      new ServiceRegistration();
+    });
+  </script>
+</body>
+</html>

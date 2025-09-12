@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hirewale · Worker Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --brand-600:#0ea5e9;
+      --brand-700:#0284c7;
+      --brand-success:#16a34a;
+      --brand-warning:#f59e0b;
+      --brand-danger:#dc2626;
+      --ink:#0f172a;
+      --card-bg:#ffffff;
+      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      --transition-speed: 0.3s;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(800px 400px at 10% 10%, #e0f2fe 0%, transparent 60%),
+        radial-gradient(700px 350px at 90% 20%, #bae6fd 0%, transparent 60%),
+        linear-gradient(180deg, #f0f9ff 0%, #ffffff 40%, #f8fafc 100%);
+      color:var(--ink);
+      padding:0;
+      margin:0;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Header and Notification Drawer */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .notification-drawer {
+      position: fixed;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      padding: 16px;
+      border-radius: 0 0 16px 16px;
+      box-shadow: var(--glass-shadow);
+      transition: top 0.4s ease-out;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .notification-drawer.open {
+      top: 0;
+    }
+    
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .notification-badge {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--brand-600);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .dashboard{
+      padding: 16px;
+      padding-bottom: 80px; /* Space for bottom nav */
+      max-width:500px;
+      margin:0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .card{
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      borderRadius:16px;
+      padding:20px;
+      box-shadow: var(--glass-shadow);
+    }
+    
+    /* Profile Section */
+    .profile{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:16px;
+      text-align:center;
+    }
+    .profile img{
+      width:80px;
+      height:80px;
+      border-radius:50%;
+      object-fit:cover;
+      border: 3px solid var(--brand-600);
+    }
+    .profile-details{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .profile-details p{
+      font-size:15px;
+      color:var(--ink);
+    }
+    .profile-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      min-width: 70px;
+    }
+    .stat-value {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--brand-600);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .profile-actions{
+      display:flex;
+      gap:10px;
+      width:100%;
+      justify-content: center;
+    }
+    .btn{
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      transition: all 0.3s ease;
+      color:white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .logout-btn{
+      background:var(--brand-600);
+    }
+    .logout-btn:hover{
+      background:var(--brand-700);
+    }
+    .availability-btn{
+      background:var(--brand-success);
+    }
+    .availability-btn.unavailable {
+      background:var(--brand-danger);
+    }
+    
+    /* Stats Section */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-left: 4px solid var(--brand-600);
+    }
+    .stat-card .icon {
+      font-size: 22px;
+      color: var(--brand-600);
+    }
+    .stat-card .value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .stat-card .label {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .stat-card.trending-up {
+      border-left-color: var(--brand-success);
+    }
+    .stat-card.trending-up .icon {
+      color: var(--brand-success);
+    }
+    .stat-card.trending-down {
+      border-left-color: var(--brand-danger);
+    }
+    .stat-card.trending-down .icon {
+      color: var(--brand-danger);
+    }
+    
+    /* Analytics */
+    .analytics h2 {
+      margin-bottom: 12px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-container {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 12px;
+      height: 150px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      justify-content: space-around;
+      overflow-x: auto;
+    }
+    .chart-bar {
+      background: var(--brand-600);
+      width: 30px;
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .chart-label {
+      position: absolute;
+      bottom: -22px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .chart-value {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    
+    /* Upcoming Jobs */
+    .jobs h2 {
+      margin-bottom: 12px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .job-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .job-details {
+      flex: 1;
+    }
+    .job-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .job-client {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .job-date {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .job-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .status-confirmed {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status-completed {
+      background: #e0f2fe;
+      color: #075985;
+    }
+    .status-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    /* Notifications */
+    .notification{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#f1f5f9;
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:10px;
+      font-size:13px;
+    }
+    .notification.unread {
+      background: #e0f2fe;
+      border-left: 3px solid var(--brand-600);
+    }
+    .notification.success{background:#dcfce7;color:#166534;border-left: 3px solid var(--brand-success);}
+    .notification.danger{background:#fee2e2;color:#991b1b;border-left: 3px solid var(--brand-danger);}
+    .notification.info{background:#e0f2fe;color:#075985;border-left: 3px solid var(--brand-600);}
+    .notification.warning{background:#fef3c7;color:#92400e;border-left: 3px solid var(--brand-warning);}
+    .notification-content {
+      flex: 1;
+    }
+    .notification-time {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .notification button{
+      background:none;
+      border:none;
+      color:#64748b;
+      font-size:14px;
+      cursor:pointer;
+      margin-left:6px;
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px;
+      z-index: 100;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #64748b;
+      font-size: 11px;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item.active {
+      color: var(--brand-600);
+    }
+    
+    .nav-item i {
+      font-size: 20px;
+    }
+    
+    /* Modal */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
+      padding: 16px;
+    }
+    .modal-content{
+      background:var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      padding:24px;
+      border-radius:16px;
+      width:100%;
+      max-width:340px;
+      text-align:center;
+      box-shadow: var(--glass-shadow);
+    }
+    .modal-content button{
+      padding:10px 20px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      color:white;
+      margin: 0 5px;
+    }
+    .modal-content .confirm{
+      background:var(--brand-danger);
+    }
+    .modal-content .cancel{
+      background:var(--brand-600);
+    }
+    
+    /* Section headers */
+    h2{
+      font-size:18px;
+      margin:0 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Clear button */
+    .clear-btn {
+      background: #ef4444;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* No items message */
+    .no-items {
+      text-align: center;
+      color: #64748b;
+      padding: 20px 0;
+      font-style: italic;
+    }
+    
+    /* Swipe indicator */
+    .swipe-indicator {
+      width: 40px;
+      height: 5px;
+      background: #cbd5e1;
+      border-radius: 3px;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with notification button -->
+  <div class="header">
+    <h1>Dashboard</h1>
+    <div class="notification-badge" id="notificationToggle">
+      <i class="fas fa-bell fa-lg"></i>
+      <span class="badge" id="notificationCount">0</span>
+    </div>
+  </div>
+
+  <!-- Notification drawer (hidden by default) -->
+  <div class="notification-drawer" id="notificationDrawer">
+    <div class="swipe-indicator"></div>
+    <div class="notification-header">
+      <h2>Notifications</h2>
+      <button class="clear-btn" id="clearAllBtn">
+        <i class="fas fa-trash"></i> Clear All
+      </button>
+    </div>
+    <div id="notificationList">
+      <!-- Notifications will be populated by JavaScript -->
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <!-- Profile -->
+    <div class="card profile">
+      <img src="https://via.placeholder.com/100" alt="Profile Photo" id="profilePic">
+      <div class="profile-details">
+        <p><strong id="workerName">John Doe</strong></p>
+        <p id="workerService"><i class="fas fa-bolt"></i> Electrician</p>
+        <p id="workerLocation"><i class="fas fa-map-marker-alt"></i> Mangalore, Karnataka</p>
+        <div class="profile-stats">
+          <div class="stat">
+            <span class="stat-value">4.8</span>
+            <span class="stat-label"><i class="fas fa-star"></i> Rating</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">92%</span>
+            <span class="stat-label">Completion</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">48</span>
+            <span class="stat-label">Jobs</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="toggleAvailability" class="btn availability-btn">
+          <i class="fas fa-check-circle"></i> Available
+        </button>
+        <button id="logoutBtn" class="btn logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card trending-up">
+        <div class="icon"><i class="fas fa-wallet"></i></div>
+        <div class="value">₹<span id="earnings">12,500</span></div>
+        <div class="label">Total Earnings</div>
+      </div>
+      <div class="stat-card trending-up">
+        <div class="icon"><i class="fas fa-calendar-check"></i></div>
+        <div class="value" id="jobsCompleted">12</div>
+        <div class="label">Jobs This Month</div>
+      </div>
+      <div class="stat-card trending-down">
+        <div class="icon"><i class="fas fa-clock"></i></div>
+        <div class="value" id="avgResponse">2.5h</div>
+        <div class="label">Avg. Response Time</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon"><i class="fas fa-gift"></i></div>
+        <div class="value" id="referrals">3</div>
+        <div class="label">Successful Referrals</div>
+      </div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="card analytics">
+      <h2><i class="fas fa-chart-line"></i> Weekly Earnings</h2>
+      <div class="chart-container" id="earningsChart">
+        <!-- Chart will be generated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Upcoming Jobs -->
+    <div class="card jobs">
+      <h2><i class="fas fa-calendar-alt"></i> Upcoming Jobs</h2>
+      <div id="upcomingJobs">
+        <!-- Jobs will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="W-view-jobs.html" class="nav-item">
+      <i class="fas fa-briefcase"></i>
+      <span>Jobs</span>
+    </a>
+    <a href="W-job-history.html" class="nav-item">
+      <i class="fas fa-history"></i>
+      <span>History</span>
+    </a>
+    <a href="W-dashboard.html" class="nav-item active">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="W-withdraw.html" class="nav-item">
+      <i class="fas fa-money-bill-wave"></i>
+      <span>Withdraw</span>
+    </a>
+    <a href="W-settings.html" class="nav-item">
+      <i class="fas fa-cog"></i>
+      <span>Settings</span>
+    </a>
+  </div>
+
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-content">
+      <p style="margin-bottom: 20px; font-size: 16px;">Are you sure you want to logout?</p>
+      <div style="display:flex;justify-content:center;">
+        <button id="confirmLogout" class="confirm">Logout</button>
+        <button id="cancelLogout" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear All Modal -->
+  <div id="clearAllModal" class="modal-overlay">
+    <div class="modal-content">
+      <p style="margin-bottom: 20px; font-size: 16px;">Clear all notifications?</p>
+      <div style="display:flex;justify-content:center;">
+        <button id="confirmClear" class="confirm">Clear</button>
+        <button id="cancelClear" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load worker data
+      const workerData = JSON.parse(sessionStorage.getItem('workerData')) || {
+        fullName: 'John Doe',
+        serviceCategory: 'Electrician',
+        city: 'Mangalore',
+        area: 'Karnataka'
+      };
+      
+      if(workerData.fullName) document.getElementById('workerName').textContent = workerData.fullName;
+      if(workerData.serviceCategory) document.getElementById('workerService').innerHTML = `<i class="fas fa-bolt"></i> ${workerData.serviceCategory}`;
+      if(workerData.city && workerData.area) document.getElementById('workerLocation').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${workerData.city}, ${workerData.area}`;
+
+      // Mock data
+      const mockData = {
+        earningsData: [12000, 15000, 11000, 18000, 17000, 19000, 22000],
+        upcomingJobs: [
+          { title: "Home Wiring", client: "Rajesh Kumar", date: "2023-06-15T10:00:00", status: "confirmed" },
+          { title: "Switch Repair", client: "Meera Singh", date: "2023-06-17T14:30:00", status: "pending" }
+        ]
+      };
+
+      // Notification drawer functionality
+      const notificationDrawer = document.getElementById('notificationDrawer');
+      const notificationToggle = document.getElementById('notificationToggle');
+      let drawerOpen = false;
+      
+      // Toggle notification drawer
+      notificationToggle.addEventListener('click', () => {
+        drawerOpen = !drawerOpen;
+        notificationDrawer.classList.toggle('open', drawerOpen);
+      });
+      
+      // Swipe to close functionality
+      let startY = 0;
+      notificationDrawer.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+      });
+      
+      notificationDrawer.addEventListener('touchmove', (e) => {
+        if (!drawerOpen) return;
+        
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 50) {
+          drawerOpen = false;
+          notificationDrawer.classList.remove('open');
+        }
+      });
+
+      // Close drawer when clicking outside
+      document.addEventListener('click', (e) => {
+        if (drawerOpen && !notificationDrawer.contains(e.target) && e.target !== notificationToggle && !notificationToggle.contains(e.target)) {
+          drawerOpen = false;
+          notificationDrawer.classList.remove('open');
+        }
+      });
+
+      // Function to add notification to sessionStorage
+      function addNotification(message, type = 'info') {
+        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        const newNotification = {
+          message: message,
+          type: type,
+          time: Date.now()
+        };
+        notifications.push(newNotification);
+        sessionStorage.setItem('notifications', JSON.stringify(notifications));
+        loadNotifications();
+      }
+
+      // Availability toggle
+      const toggleBtn = document.getElementById('toggleAvailability');
+      let available = true;
+      toggleBtn.addEventListener('click', () => {
+        available = !available;
+        toggleBtn.innerHTML = available ? 
+          '<i class="fas fa-check-circle"></i> Available' : 
+          '<i class="fas fa-times-circle"></i> Unavailable';
+        toggleBtn.classList.toggle('unavailable');
+        
+        // Add notification instead of alert
+        const message = available ? "You are now available for new jobs" : "You are now unavailable for new jobs";
+        const type = available ? "success" : "warning";
+        addNotification(message, type);
+      });
+
+      // Logout modal
+      const logoutBtn = document.getElementById('logoutBtn');
+      const logoutModal = document.getElementById('logoutModal');
+      document.getElementById('cancelLogout').addEventListener('click', ()=> logoutModal.style.display="none");
+      document.getElementById('confirmLogout').addEventListener('click', ()=> { 
+        // Add logout notification
+        addNotification("You have successfully logged out", "info");
+        
+        setTimeout(()=> {
+          sessionStorage.clear(); 
+          window.location.href="home.html";
+        }, 500);
+      });
+      logoutBtn.addEventListener('click', ()=> logoutModal.style.display="flex");
+
+      // Format time
+      function formatTime(timestamp) {
+        const now = Date.now();
+        const diff = Math.floor((now - timestamp) / 1000);
+        if (diff < 60) return "Just now";
+        if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+        return `${Math.floor(diff/86400)}d ago`;
+      }
+
+      // Load notifications from sessionStorage
+      function loadNotifications() {
+        const list = document.getElementById("notificationList");
+        const countBadge = document.getElementById("notificationCount");
+        
+        // Get notifications from sessionStorage or use empty array
+        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        
+        list.innerHTML = "";
+        if (notifications.length === 0) {
+          list.innerHTML = "<p class='no-items'>No notifications</p>";
+          countBadge.textContent = "0";
+          return;
+        }
+        
+        countBadge.textContent = notifications.length;
+        
+        notifications.forEach((note, index) => {
+          const div = document.createElement("div");
+          div.className = `notification ${note.type}`;
+          div.innerHTML = `
+            <div class="notification-content">
+              <span>${note.message}</span>
+              <div class="notification-time">${formatTime(note.time)}</div>
+            </div>
+            <button onclick="deleteNotification(${index})"><i class="fas fa-times"></i></button>
+          `;
+          list.appendChild(div);
+        });
+      }
+      
+      // Delete a notification
+      window.deleteNotification = function(index) {
+        // Get current notifications
+        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        
+        // Remove the notification at the specified index
+        notifications.splice(index, 1);
+        
+        // Save back to sessionStorage
+        sessionStorage.setItem('notifications', JSON.stringify(notifications));
+        
+        // Reload notifications
+        loadNotifications();
+      }
+
+      // Clear All notifications
+      document.getElementById("clearAllBtn").addEventListener("click", ()=>{
+        document.getElementById("clearAllModal").style.display="flex";
+      });
+      document.getElementById("cancelClear").addEventListener("click", ()=>{
+        document.getElementById("clearAllModal").style.display="none";
+      });
+      document.getElementById("confirmClear").addEventListener("click", ()=>{
+        // Clear notifications from sessionStorage
+        sessionStorage.setItem('notifications', JSON.stringify([]));
+        document.getElementById("clearAllModal").style.display="none";
+        loadNotifications();
+      });
+
+      // Generate earnings chart
+      function generateEarningsChart() {
+        const chartContainer = document.getElementById('earningsChart');
+        chartContainer.innerHTML = '';
+        
+        const maxEarnings = Math.max(...mockData.earningsData);
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        mockData.earningsData.forEach((amount, index) => {
+          const height = Math.max(20, (amount / maxEarnings) * 100);
+          const bar = document.createElement('div');
+          bar.className = 'chart-bar';
+          bar.style.height = `${height}px`;
+          bar.innerHTML = `
+            <div class="chart-value">₹${(amount/1000).toFixed(0)}k</div>
+            <div class="chart-label">${days[index]}</div>
+          `;
+          chartContainer.appendChild(bar);
+        });
+      }
+      
+      // Load upcoming jobs
+      function loadUpcomingJobs() {
+        const container = document.getElementById('upcomingJobs');
+        container.innerHTML = '';
+        
+        if (mockData.upcomingJobs.length === 0) {
+          container.innerHTML = '<p class="no-items">No upcoming jobs</p>';
+          return;
+        }
+        
+        mockData.upcomingJobs.forEach(job => {
+          const jobElement = document.createElement('div');
+          jobElement.className = 'job-item';
+          
+          const date = new Date(job.date);
+          const formattedDate = date.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short'
+          });
+          const formattedTime = date.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          jobElement.innerHTML = `
+            <div class="job-details">
+              <div class="job-title">${job.title}</div>
+              <div class="job-client">${job.client}</div>
+              <div class="job-date">${formattedDate} at ${formattedTime}</div>
+            </div>
+            <div class="job-status status-${job.status}">${job.status}</div>
+          `;
+          
+          container.appendChild(jobElement);
+        });
+      }
+      
+      // Initialize the dashboard
+      loadNotifications();
+      generateEarningsChart();
+      loadUpcomingJobs();
+    });
+  </script>
+</body>
+</html>
