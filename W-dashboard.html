@@ -14,12 +14,12 @@
       --brand-danger:#dc2626;
       --ink:#0f172a;
       --card-bg:#ffffff;
-      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-bg: rgba(255, 255, 255, 0.95);
       --glass-border: rgba(0, 0, 0, 0.08);
       --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       --transition-speed: 0.3s;
     }
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
     body{
       min-height:100vh;
       background:
@@ -31,6 +31,8 @@
       margin:0;
       position: relative;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     /* Header and Notification Drawer */
@@ -49,22 +51,40 @@
     
     .notification-drawer {
       position: fixed;
-      top: -100%;
+      top: 0;
       left: 0;
       width: 100%;
+      height: 100%;
       background: var(--glass-bg);
       backdrop-filter: blur(10px);
       z-index: 1000;
       padding: 16px;
-      border-radius: 0 0 16px 16px;
       box-shadow: var(--glass-shadow);
-      transition: top 0.4s ease-out;
-      max-height: 80vh;
-      overflow-y: auto;
+      transform: translateY(-100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      touch-action: pan-y;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     
     .notification-drawer.open {
+      transform: translateY(0);
+    }
+    
+    .notification-overlay {
+      display: none;
+      position: fixed;
       top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 999;
+    }
+    
+    .notification-overlay.open {
+      display: block;
     }
     
     .notification-header {
@@ -72,6 +92,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--glass-border);
     }
     
     .notification-badge {
@@ -108,7 +130,7 @@
     .card{
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
-      borderRadius:16px;
+      border-radius: 16px;
       padding:20px;
       box-shadow: var(--glass-shadow);
     }
@@ -260,6 +282,7 @@
       border-radius: 6px 6px 0 0;
       position: relative;
       flex-shrink: 0;
+      transition: height 0.3s ease;
     }
     .chart-label {
       position: absolute;
@@ -342,12 +365,13 @@
     .notification{
       display:flex;
       justify-content:space-between;
-      align-items:center;
+      align-items:flex-start;
       background:#f1f5f9;
       padding:12px;
       border-radius:10px;
       margin-bottom:10px;
       font-size:13px;
+      transition: all 0.2s ease;
     }
     .notification.unread {
       background: #e0f2fe;
@@ -359,6 +383,7 @@
     .notification.warning{background:#fef3c7;color:#92400e;border-left: 3px solid var(--brand-warning);}
     .notification-content {
       flex: 1;
+      padding-right: 8px;
     }
     .notification-time {
       font-size: 11px;
@@ -371,7 +396,12 @@
       color:#64748b;
       font-size:14px;
       cursor:pointer;
-      margin-left:6px;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background 0.2s ease;
+    }
+    .notification button:active {
+      background: rgba(0, 0, 0, 0.1);
     }
     
     /* Bottom Navigation */
@@ -398,10 +428,13 @@
       font-size: 11px;
       gap: 4px;
       transition: all 0.3s ease;
+      padding: 6px;
+      border-radius: 10px;
     }
     
     .nav-item.active {
       color: var(--brand-600);
+      background: rgba(14, 165, 233, 0.1);
     }
     
     .nav-item i {
@@ -480,13 +513,66 @@
       font-style: italic;
     }
     
-    /* Swipe indicator */
-    .swipe-indicator {
-      width: 40px;
-      height: 5px;
-      background: #cbd5e1;
-      border-radius: 3px;
-      margin: 0 auto 16px;
+    /* Notification content area */
+    .notification-content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 60px; /* Space for close button */
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    
+    /* Improved touch targets */
+    .btn, .nav-item, .notification {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Animation for notifications */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .notification {
+      animation: slideIn 0.3s ease;
+    }
+
+    /* Close button at bottom of notification drawer */
+    .notification-close-handle {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: var(--glass-bg);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    
+    .notification-close-handle i {
+      font-size: 24px;
+      color: var(--brand-600);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification-close-handle:active i {
+      transform: scale(0.9);
+    }
+    
+    /* Close hint text */
+    .close-hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -496,28 +582,58 @@
     <h1>Dashboard</h1>
     <div class="notification-badge" id="notificationToggle">
       <i class="fas fa-bell fa-lg"></i>
-      <span class="badge" id="notificationCount">0</span>
+      <span class="badge" id="notificationCount">3</span>
     </div>
   </div>
 
+  <!-- Notification overlay -->
+  <div class="notification-overlay" id="notificationOverlay"></div>
+
   <!-- Notification drawer (hidden by default) -->
   <div class="notification-drawer" id="notificationDrawer">
-    <div class="swipe-indicator"></div>
     <div class="notification-header">
       <h2>Notifications</h2>
       <button class="clear-btn" id="clearAllBtn">
         <i class="fas fa-trash"></i> Clear All
       </button>
     </div>
-    <div id="notificationList">
-      <!-- Notifications will be populated by JavaScript -->
+    <div class="notification-content-area" id="notificationList">
+      <div class="notification info">
+        <div class="notification-content">
+          <span>Welcome to your dashboard! Get started by updating your availability.</span>
+          <div class="notification-time">Just now</div>
+        </div>
+        <button><i class="fas fa-times"></i></button>
+      </div>
+      <div class="notification success">
+        <div class="notification-content">
+          <span>Your profile has been viewed 12 times today</span>
+          <div class="notification-time">2 hours ago</div>
+        </div>
+        <button><i class="fas fa-times"></i></button>
+      </div>
+      <div class="notification">
+        <div class="notification-content">
+          <span>You have a new job request from Rahul Sharma</span>
+          <div class="notification-time">5 hours ago</div>
+        </div>
+        <button><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    
+    <!-- Close button at bottom -->
+    <div class="notification-close-handle" id="notificationCloseHandle">
+      <div style="text-align: center;">
+        <i class="fas fa-chevron-down"></i>
+        <div class="close-hint">Tap to close</div>
+      </div>
     </div>
   </div>
 
   <div class="dashboard">
     <!-- Profile -->
     <div class="card profile">
-      <img src="https://via.placeholder.com/100" alt="Profile Photo" id="profilePic">
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="Profile Photo" id="profilePic">
       <div class="profile-details">
         <p><strong id="workerName">John Doe</strong></p>
         <p id="workerService"><i class="fas fa-bolt"></i> Electrician</p>
@@ -575,7 +691,34 @@
     <div class="card analytics">
       <h2><i class="fas fa-chart-line"></i> Weekly Earnings</h2>
       <div class="chart-container" id="earningsChart">
-        <!-- Chart will be generated by JavaScript -->
+        <div class="chart-bar" style="height: 70px;">
+          <div class="chart-value">₹12k</div>
+          <div class="chart-label">Mon</div>
+        </div>
+        <div class="chart-bar" style="height: 90px;">
+          <div class="chart-value">₹15k</div>
+          <div class="chart-label">Tue</div>
+        </div>
+        <div class="chart-bar" style="height: 65px;">
+          <div class="chart-value">₹11k</div>
+          <div class="chart-label">Wed</div>
+        </div>
+        <div class="chart-bar" style="height: 100px;">
+          <div class="chart-value">₹18k</div>
+          <div class="chart-label">Thu</div>
+        </div>
+        <div class="chart-bar" style="height: 95px;">
+          <div class="chart-value">₹17k</div>
+          <div class="chart-label">Fri</div>
+        </div>
+        <div class="chart-bar" style="height: 105px;">
+          <div class="chart-value">₹19k</div>
+          <div class="chart-label">Sat</div>
+        </div>
+        <div class="chart-bar" style="height: 120px;">
+          <div class="chart-value">₹22k</div>
+          <div class="chart-label">Sun</div>
+        </div>
       </div>
     </div>
 
@@ -583,7 +726,22 @@
     <div class="card jobs">
       <h2><i class="fas fa-calendar-alt"></i> Upcoming Jobs</h2>
       <div id="upcomingJobs">
-        <!-- Jobs will be populated by JavaScript -->
+        <div class="job-item">
+          <div class="job-details">
+            <div class="job-title">Home Wiring</div>
+            <div class="job-client">Rajesh Kumar</div>
+            <div class="job-date">15 Jun at 10:00 AM</div>
+          </div>
+          <div class="job-status status-confirmed">confirmed</div>
+        </div>
+        <div class="job-item">
+          <div class="job-details">
+            <div class="job-title">Switch Repair</div>
+            <div class="job-client">Meera Singh</div>
+            <div class="job-date">17 Jun at 2:30 PM</div>
+          </div>
+          <div class="job-status status-pending">pending</div>
+        </div>
       </div>
     </div>
   </div>
@@ -648,61 +806,53 @@
       if(workerData.serviceCategory) document.getElementById('workerService').innerHTML = `<i class="fas fa-bolt"></i> ${workerData.serviceCategory}`;
       if(workerData.city && workerData.area) document.getElementById('workerLocation').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${workerData.city}, ${workerData.area}`;
 
-      // Mock data
-      const mockData = {
-        earningsData: [12000, 15000, 11000, 18000, 17000, 19000, 22000],
-        upcomingJobs: [
-          { title: "Home Wiring", client: "Rajesh Kumar", date: "2023-06-15T10:00:00", status: "confirmed" },
-          { title: "Switch Repair", client: "Meera Singh", date: "2023-06-17T14:30:00", status: "pending" }
-        ]
-      };
-
-      // Notification drawer functionality
+      // Notification drawer functionality - IMPROVED VERSION
       const notificationDrawer = document.getElementById('notificationDrawer');
+      const notificationOverlay = document.getElementById('notificationOverlay');
       const notificationToggle = document.getElementById('notificationToggle');
+      const notificationCloseHandle = document.getElementById('notificationCloseHandle');
+      
       let drawerOpen = false;
       
       // Toggle notification drawer
+      function toggleDrawer(open) {
+        drawerOpen = open;
+        if (drawerOpen) {
+          notificationDrawer.classList.add('open');
+          notificationOverlay.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        } else {
+          notificationDrawer.classList.remove('open');
+          notificationOverlay.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      }
+      
+      // Click to open notification drawer
       notificationToggle.addEventListener('click', () => {
-        drawerOpen = !drawerOpen;
-        notificationDrawer.classList.toggle('open', drawerOpen);
+        toggleDrawer(true);
       });
       
-      // Swipe to close functionality
-      let startY = 0;
-      notificationDrawer.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
+      // Click overlay to close
+      notificationOverlay.addEventListener('click', () => {
+        toggleDrawer(false);
       });
       
-      notificationDrawer.addEventListener('touchmove', (e) => {
-        if (!drawerOpen) return;
-        
-        const currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
-        
-        if (diff > 50) {
-          drawerOpen = false;
-          notificationDrawer.classList.remove('open');
-        }
+      // Click close handle to close
+      notificationCloseHandle.addEventListener('click', () => {
+        toggleDrawer(false);
       });
-
-      // Close drawer when clicking outside
-      document.addEventListener('click', (e) => {
-        if (drawerOpen && !notificationDrawer.contains(e.target) && e.target !== notificationToggle && !notificationToggle.contains(e.target)) {
-          drawerOpen = false;
-          notificationDrawer.classList.remove('open');
-        }
-      });
-
+      
       // Function to add notification to sessionStorage
       function addNotification(message, type = 'info') {
         const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
         const newNotification = {
           message: message,
           type: type,
-          time: Date.now()
+          time: Date.now(),
+          id: Date.now() + Math.random().toString(36).substr(2, 9)
         };
-        notifications.push(newNotification);
+        notifications.unshift(newNotification); // Add to beginning of array
         sessionStorage.setItem('notifications', JSON.stringify(notifications));
         loadNotifications();
       }
@@ -715,7 +865,7 @@
         toggleBtn.innerHTML = available ? 
           '<i class="fas fa-check-circle"></i> Available' : 
           '<i class="fas fa-times-circle"></i> Unavailable';
-        toggleBtn.classList.toggle('unavailable');
+        toggleBtn.classList.toggle('unavailable', !available);
         
         // Add notification instead of alert
         const message = available ? "You are now available for new jobs" : "You are now unavailable for new jobs";
@@ -733,7 +883,7 @@
         
         setTimeout(()=> {
           sessionStorage.clear(); 
-          window.location.href="index.html";
+          window.location.href="home.html";
         }, 500);
       });
       logoutBtn.addEventListener('click', ()=> logoutModal.style.display="flex");
@@ -765,7 +915,7 @@
         
         countBadge.textContent = notifications.length;
         
-        notifications.forEach((note, index) => {
+        notifications.forEach((note) => {
           const div = document.createElement("div");
           div.className = `notification ${note.type}`;
           div.innerHTML = `
@@ -773,22 +923,28 @@
               <span>${note.message}</span>
               <div class="notification-time">${formatTime(note.time)}</div>
             </div>
-            <button onclick="deleteNotification(${index})"><i class="fas fa-times"></i></button>
+            <button data-id="${note.id}"><i class="fas fa-times"></i></button>
           `;
           list.appendChild(div);
+          
+          // Add event listener to the delete button
+          const deleteBtn = div.querySelector('button');
+          deleteBtn.addEventListener('click', () => {
+            deleteNotification(note.id);
+          });
         });
       }
       
       // Delete a notification
-      window.deleteNotification = function(index) {
+      function deleteNotification(id) {
         // Get current notifications
         const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
         
-        // Remove the notification at the specified index
-        notifications.splice(index, 1);
+        // Find the notification with the specified id
+        const updatedNotifications = notifications.filter(note => note.id !== id);
         
         // Save back to sessionStorage
-        sessionStorage.setItem('notifications', JSON.stringify(notifications));
+        sessionStorage.setItem('notifications', JSON.stringify(updatedNotifications));
         
         // Reload notifications
         loadNotifications();
@@ -808,70 +964,16 @@
         loadNotifications();
       });
 
-      // Generate earnings chart
-      function generateEarningsChart() {
-        const chartContainer = document.getElementById('earningsChart');
-        chartContainer.innerHTML = '';
-        
-        const maxEarnings = Math.max(...mockData.earningsData);
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        
-        mockData.earningsData.forEach((amount, index) => {
-          const height = Math.max(20, (amount / maxEarnings) * 100);
-          const bar = document.createElement('div');
-          bar.className = 'chart-bar';
-          bar.style.height = `${height}px`;
-          bar.innerHTML = `
-            <div class="chart-value">₹${(amount/1000).toFixed(0)}k</div>
-            <div class="chart-label">${days[index]}</div>
-          `;
-          chartContainer.appendChild(bar);
-        });
-      }
-      
-      // Load upcoming jobs
-      function loadUpcomingJobs() {
-        const container = document.getElementById('upcomingJobs');
-        container.innerHTML = '';
-        
-        if (mockData.upcomingJobs.length === 0) {
-          container.innerHTML = '<p class="no-items">No upcoming jobs</p>';
-          return;
-        }
-        
-        mockData.upcomingJobs.forEach(job => {
-          const jobElement = document.createElement('div');
-          jobElement.className = 'job-item';
-          
-          const date = new Date(job.date);
-          const formattedDate = date.toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short'
-          });
-          const formattedTime = date.toLocaleTimeString('en-IN', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          
-          jobElement.innerHTML = `
-            <div class="job-details">
-              <div class="job-title">${job.title}</div>
-              <div class="job-client">${job.client}</div>
-              <div class="job-date">${formattedDate} at ${formattedTime}</div>
-            </div>
-            <div class="job-status status-${job.status}">${job.status}</div>
-          `;
-          
-          container.appendChild(jobElement);
-        });
-      }
-      
       // Initialize the dashboard
       loadNotifications();
-      generateEarningsChart();
-      loadUpcomingJobs();
+      
+      // Add some sample notifications if none exist
+      if (JSON.parse(sessionStorage.getItem('notifications') || '[]').length === 0) {
+        addNotification("Welcome to your dashboard!", "info");
+        addNotification("Your profile has been viewed 12 times today", "success");
+        addNotification("You have a new job request", "info");
+      }
     });
   </script>
 </body>
-
 </html>
